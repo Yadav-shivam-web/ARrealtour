@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Backend Server",
+      "type": "shell",
+      "command": "if ((Invoke-WebRequest -Uri 'http://127.0.0.1:5000/api/health' -TimeoutSec 2 -UseBasicParsing -ErrorAction SilentlyContinue).StatusCode -eq 200) { Write-Output 'Express listening at: http://localhost:5000 (already running)' } else { node backend/server.js }",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": ".*"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": ".*Express listening at:.*"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Seed Local MongoDB",
+      "type": "shell",
+      "command": "node backend/seed.js",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Install Backend Dependencies",
+      "type": "shell",
+      "command": "cd backend && npm install",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ]
+}

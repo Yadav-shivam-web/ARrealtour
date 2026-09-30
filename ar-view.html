@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AR 3D Interactive Real Estate Walkthrough | AR-REALTOUR</title>
+  <meta name="description"
+    content="Experience luxury real estate in interactive 3D and Augmented Reality with full interior visibility, pan, zoom, and live room walkthroughs.">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    :root {
+      --ar-bg: #f8fafc;
+      --ar-primary: #f472b6;
+      --ar-primary-hover: #ec4899;
+      --ar-text-main: #0f172a;
+      --ar-text-muted: #475569;
+      --ar-border: #fbcfe8;
+      --ar-card-bg: rgba(255, 255, 255, 0.95);
+      --ar-radius: 14px;
+      --font-head: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--ar-bg);
+      font-family: var(--font-body);
+      color: var(--ar-text-main);
+      position: relative;
+      touch-action: none;
+    }
+
+    /* 3D Canvas */
+    #ar-webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      display: block;
+    }
+
+    /* Video stream for camera AR */
+    #ar-video-feed {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+      display: none;
+    }
+
+    /* Background simulated room */
+    .ar-bg-sim {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(248, 250, 252, 0.95) 100%),
+        url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1400&auto=format&fit=crop&q=80');
+      z-index: 2;
+      transition: background-image 0.4s ease;
+    }
+
+    /* Top Bar Header */
+    .ar-mobile-topbar {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .ar-badge-card {
+      pointer-events: auto;
+      background: var(--ar-card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--ar-border);
+      padding: 8px 14px;
+      border-radius: var(--ar-radius);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-width: 68%;
+    }
+
+    .ar-badge-card h2 {
+      font-size: 0.95rem;
+      font-family: var(--font-head);
+      color: var(--ar-text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ar-badge-meta {
+      font-size: 0.78rem;
+      color: var(--ar-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ar-badge-price {
+      color: #b45309;
+      font-weight: 800;
+    }
+
+    .ar-top-actions {
+      pointer-events: auto;
+      display: flex;
+      gap: 8px;
+    }
+
+    .ar-icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--ar-card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--ar-border);
+      color: #831843;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s;
+    }
+
+    .ar-icon-btn:hover,
+    .ar-icon-btn.active {
+      background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%);
+      color: #831843;
+      transform: scale(1.05);
+    }
+
+    /* Model Switcher Bar */
+    .ar-model-pills-bar {
+      position: absolute;
+      top: 76px;
+      left: 14px;
+      right: 14px;
+      z-index: 20;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .ar-model-pills-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .ar-model-pill {
+      background: var(--ar-card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--ar-border);
+      color: #831843;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+
+    .ar-model-pill.active {
+      background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%);
+      border-color: #f9a8d4;
+      box-shadow: 0 4px 15px rgba(244, 114, 182, 0.35);
+    }
+
+    /* Floating On-Screen Directional D-Pad & Controls (Left / Right / Up / Down / Zoom) */
+    .ar-dpad-container {
+      position: absolute;
+      left: 14px;
+      bottom: 90px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: var(--ar-card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--ar-border);
+      padding: 8px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .ar-dpad-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    .ar-pad-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #fdf2f8;
+      border: 1px solid #fbcfe8;
+      color: #831843;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .ar-pad-btn:active,
+    .ar-pad-btn:hover {
+      background: #f472b6;
+      color: #ffffff;
+      transform: scale(0.95);
+    }
+
+    /* Right Quick Action Slider / Room Menu */
+    .ar-right-controls {
+      position: absolute;
+      right: 14px;
+      bottom: 90px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .ar-room-nav-box {
+      background: var(--ar-card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--ar-border);
+      padding: 8px;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ar-room-btn {
+      background: #ffffff;
+      border: 1px solid var(--ar-border);
+      color: #831843;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .ar-room-btn:hover,
+    .ar-room-btn.active {
+      background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%);
+      color: #831843;
+    }
+
+    /* Bottom Toolbar */
+    .ar-bottom-toolbar {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      right: 14px;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--ar-card-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--ar-border);
+      padding: 8px 14px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ar-scale-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--ar-text-main);
+    }
+
+    .ar-slider-input {
+      accent-color: #f472b6;
+      width: 100px;
+      cursor: pointer;
+    }
+
+    .ar-tool-btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .ar-tool-btn {
+      background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%);
+      border: 1px solid #f9a8d4;
+      color: #831843;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(244, 114, 182, 0.25);
+      transition: all 0.2s;
+    }
+
+    .ar-tool-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(244, 114, 182, 0.35);
+    }
+
+    /* Reticle indicator */
+    .ar-surface-reticle {
+      position: absolute;
+      bottom: 30%;
+      left: 50%;
+      transform: translate(-50%, 50%);
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.3s;
+    }
+
+    .reticle-circle {
+      width: 60px;
+      height: 30px;
+      border: 2px dashed #f472b6;
+      border-radius: 50%;
+      animation: spin 8s linear infinite;
+    }
+
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .reticle-label {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #831843;
+      border: 1px solid #fbcfe8;
+    }
+
+    /* Toast */
+    .ar-toast {
+      position: absolute;
+      top: 130px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #831843;
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .ar-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Background Simulated Room -->
+  <div class="ar-bg-sim" id="ar-bg-sim"></div>
+
+  <!-- Real Camera Video Feed -->
+  <video id="ar-video-feed" autoplay playsinline muted></video>
+
+  <!-- WebGL 3D Canvas -->
+  <canvas id="ar-webgl-canvas"></canvas>
+
+  <!-- Surface Reticle -->
+  <div class="ar-surface-reticle" id="ar-reticle">
+    <div class="reticle-circle"></div>
+    <span class="reticle-label"><i class="fa-solid fa-expand"></i> Surface Detected</span>
+  </div>
+
+  <!-- Topbar Header -->
+  <div class="ar-mobile-topbar">
+    <div class="ar-badge-card">
+      <h2 id="ar-title">Aura Bay Luxury Compact Studio</h2>
+      <div class="ar-badge-meta">
+        <span class="ar-badge-price" id="ar-price">₹1.85 Cr</span> &bull;
+        <span id="ar-loc">Bandra West, Mumbai</span>
+      </div>
+    </div>
+
+    <div class="ar-top-actions">
+      <button class="ar-icon-btn" onclick="MobileAR.toggleRoofCutaway()" title="Interior Cutaway / Roof Off">
+        <i class="fa-solid fa-layer-group" id="icon-cutaway"></i>
+      </button>
+      <button class="ar-icon-btn" onclick="MobileAR.toggleCameraStream()" title="Live Camera AR">
+        <i class="fa-solid fa-camera" id="icon-camera"></i>
+      </button>
+      <a href="index.html" class="ar-icon-btn" title="Back to Portal">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Model Switcher Bar -->
+  <div class="ar-model-pills-bar">
+    <button class="ar-model-pill active" onclick="MobileAR.loadModel('model-mumbai')">
+      <i class="fa-solid fa-house-chimney"></i> Mumbai (₹1.85 Cr)
+    </button>
+    <button class="ar-model-pill" onclick="MobileAR.loadModel('model-pune')">
+      <i class="fa-solid fa-tree"></i> Pune (₹78 L)
+    </button>
+    <button class="ar-model-pill" onclick="MobileAR.loadModel('model-delhi')">
+      <i class="fa-solid fa-hotel"></i> Delhi (₹14.5 Cr)
+    </button>
+    <button class="ar-model-pill" onclick="MobileAR.loadModel('model-noida')">
+      <i class="fa-solid fa-building"></i> Noida (₹5.95 Cr)
+    </button>
+  </div>
+
+  <!-- Directional D-Pad Controls (Move Up/Down/Left/Right/Reset) -->
+  <div class="ar-dpad-container">
+    <div class="ar-dpad-row">
+      <button class="ar-pad-btn" onclick="MobileAR.pan(0, 0.3)" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
+    </div>
+    <div class="ar-dpad-row">
+      <button class="ar-pad-btn" onclick="MobileAR.pan(-0.3, 0)" title="Move Left"><i class="fa-solid fa-arrow-left"></i></button>
+      <button class="ar-pad-btn" onclick="MobileAR.resetView()" title="Center / Reset"><i class="fa-solid fa-crosshairs"></i></button>
+      <button class="ar-pad-btn" onclick="MobileAR.pan(0.3, 0)" title="Move Right"><i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+    <div class="ar-dpad-row">
+      <button class="ar-pad-btn" onclick="MobileAR.pan(0, -0.3)" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
+    </div>
+  </div>
+
+  <!-- Right Interior Quick-Views -->
+  <div class="ar-right-controls">
+    <div class="ar-room-nav-box">
+      <button class="ar-room-btn active" onclick="MobileAR.setRoomView('orbit')">
+        <i class="fa-solid fa-rotate"></i> 360&deg; Orbit
+      </button>
+      <button class="ar-room-btn" onclick="MobileAR.setRoomView('living')">
+        <i class="fa-solid fa-couch"></i> Living Room
+      </button>
+      <button class="ar-room-btn" onclick="MobileAR.setRoomView('bed')">
+        <i class="fa-solid fa-bed"></i> Bedroom
+      </button>
+      <button class="ar-room-btn" onclick="MobileAR.setRoomView('kitchen')">
+        <i class="fa-solid fa-utensils"></i> Kitchen/Dining
+      </button>
+      <button class="ar-room-btn" onclick="MobileAR.setRoomView('terrace')">
+        <i class="fa-solid fa-water-ladder"></i> Deck / Pool
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom Toolbar -->
+  <div class="ar-bottom-toolbar">
+    <div class="ar-scale-control">
+      <span><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Size:</span>
+      <button class="ar-pad-btn" style="width:28px; height:28px;" onclick="MobileAR.zoom(-0.2)"><i class="fa-solid fa-minus"></i></button>
+      <input type="range" min="30" max="250" value="100" class="ar-slider-input" id="ar-scale-slider" oninput="MobileAR.setScaleSlider(this.value)">
+      <button class="ar-pad-btn" style="width:28px; height:28px;" onclick="MobileAR.zoom(0.2)"><i class="fa-solid fa-plus"></i></button>
+    </div>
+
+    <div class="ar-tool-btn-group">
+      <button class="ar-tool-btn" onclick="MobileAR.togglePlacement()">
+        <i class="fa-solid fa-location-crosshairs"></i> <span id="ar-place-text">Anchor</span>
+      </button>
+      <button class="ar-tool-btn" onclick="MobileAR.toggleScalePreset()">
+        <i class="fa-solid fa-maximize"></i> <span id="ar-scale-preset-text">1:1 Scale</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="ar-toast" id="ar-toast">Interactive 3D AR Loaded</div>
+
+  <script>
+    /**
+     * ============================================================================
+     * STANDALONE AR & 3D INTERACTIVE VIEWER CONTROLLER
+     * ============================================================================
+     */
+    const MobileAR = {
+      scene: null,
+      camera: null,
+      renderer: null,
+      controls: null,
+      modelGroup: null,
+      roofMesh: null,
+      currentModelId: 'model-mumbai',
+      isCutaway: false,
+      isPlaced: false,
+      isRealScale: false,
+      mediaStream: null,
+      targetOffset: { x: 0, y: -0.3, z: 0 },
+
+      propertiesData: {
+        'model-mumbai': {
+          title: 'Aura Bay Luxury Compact Studio',
+          price: '₹1.85 Cr',
+          loc: 'Bandra West, Mumbai',
+          scale: 1.0
+        },
+        'model-pune': {
+          title: 'Gulmohar Green Compact Haven',
+          price: '₹78 Lakh',
+          loc: 'Koregaon Park, Pune',
+          scale: 0.9
+        },
+        'model-delhi': {
+          title: 'Rajvilas Grand Imperial Manor',
+          price: '₹14.50 Cr',
+          loc: 'Vasant Vihar, New Delhi',
+          scale: 0.75
+        },
+        'model-noida': {
+          title: 'The Palm Royal Duplex Penthouse',
+          price: '₹5.95 Cr',
+          loc: 'Sector 128, Noida',
+          scale: 0.85
+        }
+      },
+
+      init() {
+        // Read URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const m = urlParams.get('model') || urlParams.get('id') || 'model-mumbai';
+        this.currentModelId = this.propertiesData[m] ? m : (m === 'prop-2' ? 'model-pune' : (m === 'prop-3' ? 'model-delhi' : (m === 'prop-4' ? 'model-noida' : 'model-mumbai')));
+
+        this.initThree();
+        this.loadModel(this.currentModelId);
+      },
+
+      initThree() {
+        const canvas = document.getElementById('ar-webgl-canvas');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        this.camera.position.set(0, 3.5, 8.5);
+
+        this.renderer = new THREE.WebGLRenderer({
+          canvas: canvas,
+          alpha: true,
+          antialias: true
+        });
+        this.renderer.setSize(width, height);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.shadowMap.enabled = true;
+
+        // Orbit & Pan Controls (Mouse left/right/wheel + touch 1-finger/2-finger/pinch)
+        if (THREE.OrbitControls) {
+          this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+          this.controls.enableDamping = true;
+          this.controls.dampingFactor = 0.05;
+          this.controls.enablePan = true;
+          this.controls.enableZoom = true;
+          this.controls.enableRotate = true;
+          this.controls.target.set(0, 0.4, 0);
+        }
+
+        // Lighting
+        const amb = new THREE.AmbientLight(0xffffff, 1.3);
+        this.scene.add(amb);
+
+        const sun = new THREE.DirectionalLight(0xfffaed, 2.2);
+        sun.position.set(10, 20, 15);
+        sun.castShadow = true;
+        this.scene.add(sun);
+
+        // Ground shadow plane
+        const shadowMat = new THREE.ShadowMaterial({ opacity: 0.15 });
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), shadowMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.01;
+        ground.receiveShadow = true;
+        this.scene.add(ground);
+
+        // Animation Loop
+        const animate = () => {
+          requestAnimationFrame(animate);
+          if (this.controls) this.controls.update();
+          this.renderer.render(this.scene, this.camera);
+        };
+        animate();
+
+        window.addEventListener('resize', () => {
+          this.camera.aspect = window.innerWidth / window.innerHeight;
+          this.camera.updateProjectionMatrix();
+          this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+      },
+
+      loadModel(modelId) {
+        this.currentModelId = modelId;
+        const prop = this.propertiesData[modelId] || this.propertiesData['model-mumbai'];
+
+        // Update UI
+        document.getElementById('ar-title').textContent = prop.title;
+        document.getElementById('ar-price').textContent = prop.price;
+        document.getElementById('ar-loc').textContent = prop.loc;
+
+        document.querySelectorAll('.ar-model-pill').forEach(btn => {
+          if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(modelId)) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        if (this.modelGroup) {
+          this.scene.remove(this.modelGroup);
+        }
+        this.modelGroup = new THREE.Group();
+        this.modelGroup.position.set(this.targetOffset.x, this.targetOffset.y, this.targetOffset.z);
+
+        // Common Materials
+        const floorWood = new THREE.MeshStandardMaterial({ color: 0x9a6b43, roughness: 0.5 });
+        const floorMarble = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.2, metalness: 0.1 });
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 });
+        const glassMat = new THREE.MeshPhysicalMaterial({ color: 0xa5f3fc, transparent: true, opacity: 0.35, roughness: 0.1 });
+        const sofaMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.6 });
+        const emeraldMat = new THREE.MeshStandardMaterial({ color: 0x065f46, roughness: 0.6 });
+        const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.4 });
+        const bedMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.5 });
+        const goldMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.8, roughness: 0.2 });
+        const waterMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.05, metalness: 0.8 });
+
+        if (modelId === 'model-mumbai') {
+          // MUMBAI 1 BHK COMPACT STUDIO (Full Interior Visible)
+          const base = new THREE.Mesh(new THREE.BoxGeometry(6.5, 0.2, 4.5), floorWood);
+          base.position.y = 0.1;
+          this.modelGroup.add(base);
+
+          // Transparent glass exterior envelope
+          const glassFront = new THREE.Mesh(new THREE.BoxGeometry(6.5, 2.2, 0.08), glassMat);
+          glassFront.position.set(0, 1.2, 2.25);
+          const glassBack = new THREE.Mesh(new THREE.BoxGeometry(6.5, 2.2, 0.08), glassMat);
+          glassBack.position.set(0, 1.2, -2.25);
+          this.modelGroup.add(glassFront, glassBack);
+
+          // Living room L-sofa & coffee table
+          const sofa = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.4, 0.8), sofaMat);
+          sofa.position.set(-1.6, 0.3, 0.6);
+          const table = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.2, 0.5), woodMat);
+          table.position.set(-1.6, 0.2, 1.3);
+          const tvWall = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 0.06), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
+          tvWall.position.set(-1.6, 0.9, -2.15);
+          this.modelGroup.add(sofa, table, tvWall);
+
+          // Kitchen Island & Stools
+          const island = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 0.6), woodMat);
+          island.position.set(-1.6, 0.35, -1.2);
+          this.modelGroup.add(island);
+
+          // Glass Bedroom Partition & Bed
+          const part = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.8, 2.4), glassMat);
+          part.position.set(0.6, 1.0, -1.0);
+          const bed = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 1.8), bedMat);
+          bed.position.set(2.0, 0.3, -1.1);
+          this.modelGroup.add(part, bed);
+
+          // Ocean Balcony
+          const bal = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.15, 1.0), floorWood);
+          bal.position.set(1.8, 0.1, 2.6);
+          this.modelGroup.add(bal);
+
+          // Roof mesh (can be cutaway)
+          this.roofMesh = new THREE.Mesh(new THREE.BoxGeometry(6.7, 0.15, 4.7), wallMat);
+          this.roofMesh.position.set(0, 2.35, 0);
+          this.modelGroup.add(this.roofMesh);
+
+        } else if (modelId === 'model-pune') {
+          // PUNE 2 BHK GREEN HAVEN
+          const base = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.2, 5.2), floorWood);
+          base.position.y = 0.1;
+          this.modelGroup.add(base);
+
+          const glassFront = new THREE.Mesh(new THREE.BoxGeometry(7.2, 2.3, 0.08), glassMat);
+          glassFront.position.set(0, 1.25, 2.6);
+          this.modelGroup.add(glassFront);
+
+          // Emerald Velvet Living Sofa & 4-Seater Dining Set
+          const sofa = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.45, 0.9), emeraldMat);
+          sofa.position.set(-1.8, 0.35, 0.8);
+          const dining = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.45, 0.9), woodMat);
+          dining.position.set(-1.8, 0.35, -1.2);
+          this.modelGroup.add(sofa, dining);
+
+          // 2 Bedrooms
+          const bed1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 1.8), bedMat);
+          bed1.position.set(2.0, 0.3, -1.3);
+          const bed2 = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.4, 1.6), bedMat);
+          bed2.position.set(2.0, 0.3, 1.2);
+          this.modelGroup.add(bed1, bed2);
+
+          // Planter terrace
+          const planter = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.3, 0.5), new THREE.MeshStandardMaterial({ color: 0x166534 }));
+          planter.position.set(0, 0.25, 2.8);
+          this.modelGroup.add(planter);
+
+          this.roofMesh = new THREE.Mesh(new THREE.BoxGeometry(7.4, 0.15, 5.4), wallMat);
+          this.roofMesh.position.set(0, 2.45, 0);
+          this.modelGroup.add(this.roofMesh);
+
+        } else if (modelId === 'model-delhi') {
+          // DELHI 5 BHK GRAND IMPERIAL MANOR (2 Floors, Chandelier, Banquet, Pool)
+          const base = new THREE.Mesh(new THREE.BoxGeometry(9.0, 0.25, 6.5), floorMarble);
+          base.position.y = 0.12;
+          this.modelGroup.add(base);
+
+          // Central Double-Height Glass Atrium
+          const glassFront = new THREE.Mesh(new THREE.BoxGeometry(8.8, 3.8, 0.08), glassMat);
+          glassFront.position.set(0, 2.0, 3.25);
+          this.modelGroup.add(glassFront);
+
+          // Swarovski Chandelier
+          const chand = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.2, 0.8, 12), goldMat);
+          chand.position.set(0, 3.0, 0);
+          this.modelGroup.add(chand);
+
+          // Grand Sectional & 8-Seater Banquet
+          const secSofa = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.5, 1.2), sofaMat);
+          secSofa.position.set(-2.2, 0.38, 1.2);
+          const banquet = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.5, 1.0), woodMat);
+          banquet.position.set(2.2, 0.38, 1.2);
+          this.modelGroup.add(secSofa, banquet);
+
+          // Upper Floor Gallery & Master Suites
+          const gallery = new THREE.Mesh(new THREE.BoxGeometry(8.5, 0.15, 2.8), floorMarble);
+          gallery.position.set(0, 2.0, -1.6);
+          const upBed1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.4, 1.8), bedMat);
+          upBed1.position.set(-2.6, 2.3, -1.6);
+          const upBed2 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.4, 1.8), bedMat);
+          upBed2.position.set(2.6, 2.3, -1.6);
+          this.modelGroup.add(gallery, upBed1, upBed2);
+
+          // Outdoor Swimming Pool
+          const pool = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.1, 2.0), waterMat);
+          pool.position.set(0, 0.08, 4.6);
+          this.modelGroup.add(pool);
+
+          this.roofMesh = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.2, 6.7), wallMat);
+          this.roofMesh.position.set(0, 3.95, 0);
+          this.modelGroup.add(this.roofMesh);
+
+        } else if (modelId === 'model-noida') {
+          // NOIDA 4 BHK ROYAL DUPLEX PENTHOUSE (Double Height, Stairs, Jacuzzi)
+          const base = new THREE.Mesh(new THREE.BoxGeometry(8.0, 0.2, 5.8), floorMarble);
+          base.position.y = 0.1;
+          this.modelGroup.add(base);
+
+          const glass = new THREE.Mesh(new THREE.BoxGeometry(7.8, 3.6, 0.08), glassMat);
+          glass.position.set(0, 1.9, 2.9);
+          this.modelGroup.add(glass);
+
+          // Floating Wood Staircase
+          for (let s = 0; s < 7; s++) {
+            const step = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.08, 0.3), woodMat);
+            step.position.set(2.8 - s * 0.15, 0.25 + s * 0.25, 0.8 - s * 0.35);
+            this.modelGroup.add(step);
+          }
+
+          // Upper Mezzanine Suite
+          const mez = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.15, 3.2), floorMarble);
+          mez.position.set(-1.2, 1.85, -1.1);
+          const mezBed = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.4, 1.8), bedMat);
+          mezBed.position.set(-1.5, 2.15, -1.1);
+          this.modelGroup.add(mez, mezBed);
+
+          // Sky Jacuzzi & Sun Deck
+          const jacuzzi = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.4, 16), waterMat);
+          jacuzzi.position.set(2.4, 0.3, -1.8);
+          this.modelGroup.add(jacuzzi);
+
+          this.roofMesh = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.18, 6.0), wallMat);
+          this.roofMesh.position.set(0, 3.75, 0);
+          this.modelGroup.add(this.roofMesh);
+        }
+
+        this.scene.add(this.modelGroup);
+        this.showToast(`Loaded 3D Walkthrough: ${prop.title}`);
+        this.resetView();
+      },
+
+      /* Navigation & Directional Pan */
+      pan(dx, dy) {
+        this.targetOffset.x += dx;
+        this.targetOffset.y += dy;
+        if (this.modelGroup) {
+          this.modelGroup.position.set(this.targetOffset.x, this.targetOffset.y, this.targetOffset.z);
+        }
+        if (this.controls) {
+          this.controls.target.x += dx;
+          this.controls.target.y += dy;
+          this.controls.update();
+        }
+      },
+
+      zoom(delta) {
+        const slider = document.getElementById('ar-scale-slider');
+        let val = Number(slider.value) + (delta * 50);
+        val = Math.max(30, Math.min(250, val));
+        slider.value = val;
+        this.setScaleSlider(val);
+      },
+
+      setScaleSlider(val) {
+        const scale = Number(val) / 100;
+        if (this.modelGroup) {
+          this.modelGroup.scale.set(scale, scale, scale);
+        }
+      },
+
+      toggleScalePreset() {
+        this.isRealScale = !this.isRealScale;
+        const btnText = document.getElementById('ar-scale-preset-text');
+        const slider = document.getElementById('ar-scale-slider');
+        if (this.isRealScale) {
+          btnText.textContent = '1:50 Tabletop';
+          slider.value = 180;
+          this.setScaleSlider(180);
+          this.showToast('Scaled to 1:1 Life Size View');
+        } else {
+          btnText.textContent = '1:1 Scale';
+          slider.value = 100;
+          this.setScaleSlider(100);
+          this.showToast('Scaled to 1:50 Tabletop View');
+        }
+      },
+
+      resetView() {
+        this.targetOffset = { x: 0, y: -0.3, z: 0 };
+        if (this.modelGroup) {
+          this.modelGroup.position.set(0, -0.3, 0);
+          this.modelGroup.rotation.set(0, 0, 0);
+        }
+        if (this.camera && this.controls) {
+          this.camera.position.set(0, 3.5, 8.5);
+          this.controls.target.set(0, 0.4, 0);
+          this.controls.update();
+        }
+      },
+
+      togglePlacement() {
+        this.isPlaced = !this.isPlaced;
+        const text = document.getElementById('ar-place-text');
+        const reticle = document.getElementById('ar-reticle');
+        if (this.isPlaced) {
+          text.textContent = 'Reposition';
+          if (reticle) reticle.style.opacity = '0';
+          this.showToast('Model Anchored on Surface');
+        } else {
+          text.textContent = 'Anchor';
+          if (reticle) reticle.style.opacity = '1';
+          this.showToast('Surface Scanning Active');
+        }
+      },
+
+      toggleRoofCutaway() {
+        this.isCutaway = !this.isCutaway;
+        if (this.roofMesh) {
+          this.roofMesh.visible = !this.isCutaway;
+        }
+        const btn = document.getElementById('icon-cutaway');
+        if (this.isCutaway) {
+          this.showToast('Roof Cutaway ON: Interior Rooms Revealed');
+          if (this.camera && this.controls) {
+            this.camera.position.set(0, 7, 5);
+            this.controls.target.set(0, 0.4, 0);
+            this.controls.update();
+          }
+        } else {
+          this.showToast('Roof Cutaway OFF');
+        }
+      },
+
+      setRoomView(room) {
+        document.querySelectorAll('.ar-room-btn').forEach(b => b.classList.remove('active'));
+        if (window.event && window.event.target) {
+          const btn = window.event.target.closest('.ar-room-btn');
+          if (btn) btn.classList.add('active');
+        }
+
+        if (!this.camera || !this.controls) return;
+
+        if (room === 'orbit') {
+          this.resetView();
+        } else if (room === 'living') {
+          this.camera.position.set(-1.8, 1.2, 3.0);
+          this.controls.target.set(-1.6, 0.6, 0.6);
+          this.showToast('Inside Living Room Salon');
+        } else if (room === 'bed') {
+          this.camera.position.set(1.8, 1.3, 1.5);
+          this.controls.target.set(1.8, 0.6, -1.0);
+          this.showToast('Inside Master Bedroom');
+        } else if (room === 'kitchen') {
+          this.camera.position.set(-1.6, 1.2, 0.5);
+          this.controls.target.set(-1.6, 0.5, -1.2);
+          this.showToast('Inside Kitchen & Dining Suite');
+        } else if (room === 'terrace') {
+          this.camera.position.set(0, 1.5, 4.0);
+          this.controls.target.set(0, 0.3, 2.5);
+          this.showToast('Outdoor Pool & Terrace Deck');
+        }
+        this.controls.update();
+      },
+
+      async toggleCameraStream() {
+        const video = document.getElementById('ar-video-feed');
+        const bg = document.getElementById('ar-bg-sim');
+        const icon = document.getElementById('icon-camera');
+
+        if (this.mediaStream) {
+          this.mediaStream.getTracks().forEach(t => t.stop());
+          this.mediaStream = null;
+          video.style.display = 'none';
+          bg.style.display = 'block';
+          icon.parentElement.classList.remove('active');
+          this.showToast('Switched to Realistic Simulated AR Studio');
+          return;
+        }
+
+        try {
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: 'environment' }
+            });
+            this.mediaStream = stream;
+            video.srcObject = stream;
+            video.style.display = 'block';
+            bg.style.display = 'none';
+            icon.parentElement.classList.add('active');
+            this.showToast('Live Camera AR Active');
+          } else {
+            alert('Camera not supported on this browser.');
+          }
+        } catch (e) {
+          alert('Camera permission denied. Using Simulated AR Environment.');
+        }
+      },
+
+      showToast(text) {
+        const toast = document.getElementById('ar-toast');
+        if (!toast) return;
+        toast.textContent = text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      MobileAR.init();
+    });
+  </script>
+</body>
+
+</html>

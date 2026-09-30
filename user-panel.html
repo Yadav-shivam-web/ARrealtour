@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIP User Portal | AR-REALTOUR Interactive Platform</title>
+  <meta name="description"
+    content="AR-REALTOUR VIP Client Dashboard - 3D Virtual Tours, WebXR Augmented Reality, Tour Bookings, Saved Luxury Estates, and Concierge Agent Chat.">
+
+  <!-- Favicon & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Core & User Panel Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/user-panel.css">
+
+  <!-- Three.js for Embedded 3D Studio -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+
+<body class="user-panel-body">
+  <div class="user-ambient-glow"></div>
+
+  <!-- ==========================================================================
+       USER SIDEBAR NAVIGATION (Directly mapping diagram USER flows)
+       ========================================================================== -->
+  <aside class="user-sidebar">
+    <div class="user-sidebar-header">
+      <div class="user-logo-icon">
+        <i class="fa-solid fa-cube"></i>
+      </div>
+      <div class="user-logo-text">
+        AR-REAL<span>TOUR</span>
+      </div>
+      <span class="user-badge-role">VIP Portal</span>
+    </div>
+
+    <nav class="user-nav">
+      <div class="user-nav-section-title">My Experience</div>
+      <a class="user-nav-link active" data-tab="overview" onclick="UserPanel.switchTab('overview')">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>My Dashboard</span>
+      </a>
+      <a class="user-nav-link" data-tab="studio3d" onclick="UserPanel.switchTab('studio3d')">
+        <i class="fa-solid fa-vr-cardboard"></i>
+        <span>3D Tour Studio</span>
+      </a>
+      <a class="user-nav-link" data-tab="browse" onclick="UserPanel.switchTab('browse')">
+        <i class="fa-solid fa-building-circle-arrow-right"></i>
+        <span>Browse Properties</span>
+      </a>
+      <a class="user-nav-link" data-tab="bookings" onclick="UserPanel.switchTab('bookings')">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span>My Tour Bookings</span>
+        <span class="user-nav-counter" id="nav-booking-badge">2</span>
+      </a>
+      <a class="user-nav-link" data-tab="saved" onclick="UserPanel.switchTab('saved')">
+        <i class="fa-solid fa-heart"></i>
+        <span>Saved Estates</span>
+      </a>
+      <a class="user-nav-link" data-tab="customizer" onclick="UserPanel.switchTab('customizer')">
+        <i class="fa-solid fa-palette"></i>
+        <span>Custom Interior Designs</span>
+      </a>
+
+      <div class="user-nav-section-title">Concierge &amp; Direct Agent</div>
+      <a class="user-nav-link" data-tab="chat" onclick="UserPanel.switchTab('chat')">
+        <i class="fa-solid fa-comments"></i>
+        <span>Agent Messaging</span>
+      </a>
+
+      <div class="user-nav-section-title">Account &amp; System</div>
+      <a class="user-nav-link" data-tab="profile" onclick="UserPanel.switchTab('profile')">
+        <i class="fa-solid fa-user-gear"></i>
+        <span>Profile &amp; Budget</span>
+      </a>
+      <a href="ar-view.html" target="_blank" class="user-nav-link" style="color: #db2777; font-weight: 700;">
+        <i class="fa-solid fa-mobile-screen-button"></i>
+        <span>Live Mobile AR View</span>
+      </a>
+      <a href="index.html" class="user-nav-link" style="color: #38bdf8;">
+        <i class="fa-solid fa-compass"></i>
+        <span>Public Main Website</span>
+      </a>
+    </nav>
+
+    <div class="user-sidebar-footer">
+      <div class="user-profile-card">
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+          alt="Avatar" class="user-avatar-img bind-user-avatar">
+        <div class="user-profile-info">
+          <h4 class="bind-user-name">Alex Rivera</h4>
+          <p class="bind-user-role">VIP Buyer / Investor</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==========================================================================
+       MAIN CONTENT PANEL
+       ========================================================================== -->
+  <main class="user-main">
+    <!-- Top Bar -->
+    <header class="user-topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title" id="user-topbar-title">VIP Client Dashboard</h1>
+      </div>
+
+      <div class="topbar-right">
+        <button class="btn-user-action" onclick="UserPanel.launchAR('prop-1')">
+          <i class="fa-solid fa-expand"></i>
+          <span>Launch WebXR AR</span>
+        </button>
+        <button class="btn-user-action btn-user-primary" onclick="UserPanel.switchTab('studio3d')">
+          <i class="fa-solid fa-vr-cardboard"></i>
+          <span>Open 3D Studio</span>
+        </button>
+        <a href="login.html" onclick="UserPanel.logout(); return false;" class="btn-user-action" style="color: var(--user-accent-rose);" title="Sign Out">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
+      </div>
+    </header>
+
+    <!-- ==========================================================================
+         TAB 1: USER DASHBOARD OVERVIEW
+         ========================================================================== -->
+    <section class="user-tab-content active" id="tab-overview">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Welcome to your VIP Portal, <span class="bind-user-firstname"
+              style="color: var(--user-accent-cyan);">Alex</span>! 👋</h2>
+          <p>Track your scheduled architectural tours, WebXR AR sessions, and saved luxury estates.</p>
+        </div>
+        <div>
+          <button class="btn-user-action btn-user-primary" onclick="UserPanel.switchTab('browse')">
+            <i class="fa-solid fa-compass"></i> Discover 3D Estates
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="user-kpi-grid">
+        <div class="user-kpi-card">
+          <div class="user-kpi-info">
+            <span>3D Walkthroughs</span>
+            <h3>14 Explored</h3>
+            <span class="user-kpi-subtext"><i class="fa-solid fa-vr-cardboard"></i> 60 FPS WebGL</span>
+          </div>
+          <div class="user-kpi-icon-box">
+            <i class="fa-solid fa-cube"></i>
+          </div>
+        </div>
+
+        <div class="user-kpi-card user-kpi-purple">
+          <div class="user-kpi-info">
+            <span>AR Sessions</span>
+            <h3>6 Launched</h3>
+            <span class="user-kpi-subtext"><i class="fa-solid fa-expand"></i> Spatial 1:1 Scale</span>
+          </div>
+          <div class="user-kpi-icon-box">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+          </div>
+        </div>
+
+        <div class="user-kpi-card user-kpi-emerald">
+          <div class="user-kpi-info">
+            <span>VIP Tour Bookings</span>
+            <h3 id="user-kpi-bookings">2 Booked</h3>
+            <span class="user-kpi-subtext"><i class="fa-solid fa-calendar-check"></i> Concierge Assigned</span>
+          </div>
+          <div class="user-kpi-icon-box">
+            <i class="fa-solid fa-calendar-days"></i>
+          </div>
+        </div>
+
+        <div class="user-kpi-card user-kpi-gold">
+          <div class="user-kpi-info">
+            <span>Saved Portfolio</span>
+            <h3>$37.7M</h3>
+            <span class="user-kpi-subtext" style="color: var(--user-accent-gold);"><i class="fa-solid fa-heart"></i> 3
+              Favorites</span>
+          </div>
+          <div class="user-kpi-icon-box">
+            <i class="fa-solid fa-gem"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Split 2-Col: Scheduled Tour Bookings & Quick Launch -->
+      <div class="admin-grid-2col">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-clock"></i> My Scheduled VIP Tours</h3>
+            <button class="btn-user-action" onclick="UserPanel.switchTab('bookings')">View All</button>
+          </div>
+
+          <div class="table-responsive-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Tour Format</th>
+                  <th>Date</th>
+                  <th>Agent</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="user-upcoming-tbody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-bolt"></i> Instant 3D Actions</h3>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button class="btn-auth-submit" onclick="UserPanel.switchTab('studio3d')"
+              style="background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%); cursor: pointer; border: 1px solid #f9a8d4; padding: 12px; font-size: 0.9rem; color: #831843; font-weight: 700; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(244, 114, 182, 0.25);">
+              <i class="fa-solid fa-cube"></i> Open 3D Virtual Studio
+            </button>
+            <button class="btn-auth-submit" onclick="UserPanel.launchAR('prop-1')"
+              style="background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%); cursor: pointer; border: 1px solid #f9a8d4; padding: 12px; font-size: 0.9rem; color: #831843; font-weight: 700; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(244, 114, 182, 0.25);">
+              <i class="fa-solid fa-expand"></i> Launch WebXR AR Studio
+            </button>
+            <button class="btn-auth-submit" onclick="UserPanel.switchTab('customizer')"
+              style="background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%); cursor: pointer; border: 1px solid #f9a8d4; padding: 12px; font-size: 0.9rem; color: #831843; font-weight: 700; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(244, 114, 182, 0.25);">
+              <i class="fa-solid fa-palette"></i> Customize Interior Finishes
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 2: EMBEDDED 3D VIRTUAL STUDIO
+         ========================================================================== -->
+    <section class="user-tab-content" id="tab-studio3d">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Interactive 3D Virtual Walkthrough</h2>
+          <p>Rotate, inspect, and toggle daylight atmospheric settings for luxury estates.</p>
+        </div>
+        <button class="btn-user-action btn-user-primary" onclick="UserPanel.launchAR('prop-1')">
+          <i class="fa-solid fa-expand"></i> Experience in AR
+        </button>
+      </div>
+
+      <!-- Model Switcher Bar -->
+      <div class="model-selector-bar" style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="model-select-btn active" onclick="UserPanel.buildVillaGeometry('model-mumbai')">
+          <i class="fa-solid fa-house-chimney"></i> Mumbai (Small - ₹1.85 Cr)
+        </button>
+        <button class="model-select-btn" onclick="UserPanel.buildVillaGeometry('model-pune')">
+          <i class="fa-solid fa-tree"></i> Pune (Small - ₹78 L)
+        </button>
+        <button class="model-select-btn" onclick="UserPanel.buildVillaGeometry('model-delhi')">
+          <i class="fa-solid fa-hotel"></i> Delhi (Large Manor - ₹14.5 Cr)
+        </button>
+        <button class="model-select-btn" onclick="UserPanel.buildVillaGeometry('model-noida')">
+          <i class="fa-solid fa-building"></i> Noida (Large Penthouse - ₹5.95 Cr)
+        </button>
+      </div>
+
+      <div class="user-3d-studio-card">
+        <canvas id="user-studio-canvas" class="user-3d-canvas"></canvas>
+
+        <div class="user-studio-hud">
+          <div class="user-studio-badge">
+            <i class="fa-solid fa-circle-dot" style="color: var(--user-accent-cyan);"></i>
+            <span id="user-studio-prop-title">Aura Bay Luxury Compact Studio &bull; Bandra West, Mumbai (₹1.85 Cr)</span>
+          </div>
+
+          <div class="user-studio-controls-right">
+            <button class="btn-user-action" onclick="UserPanel.set3DView('orbit')"><i
+                class="fa-solid fa-arrows-spin"></i> Orbit</button>
+            <button class="btn-user-action" onclick="UserPanel.set3DView('pool')"><i
+                class="fa-solid fa-water-ladder"></i> Pool/Terrace</button>
+            <button class="btn-user-action" onclick="UserPanel.set3DView('interior')"><i class="fa-solid fa-couch"></i>
+              Interior</button>
+          </div>
+        </div>
+
+        <div class="user-studio-bottom-bar">
+          <div style="font-size: 0.85rem; color: var(--user-text-primary);">
+            <strong>Atmosphere Lighting:</strong>
+          </div>
+          <div class="user-pill-btn-group">
+            <button class="user-pill-btn active" onclick="UserPanel.set3DLighting('day')"><i
+                class="fa-solid fa-sun"></i> Day</button>
+            <button class="user-pill-btn" onclick="UserPanel.set3DLighting('sunset')"><i
+                class="fa-solid fa-cloud-sun"></i> Sunset</button>
+            <button class="user-pill-btn" onclick="UserPanel.set3DLighting('night')"><i class="fa-solid fa-moon"></i>
+              Night</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 3: BROWSE PROPERTIES PORTFOLIO
+         ========================================================================== -->
+    <section class="user-tab-content" id="tab-browse">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Curated 3D Architectural Portfolio</h2>
+          <p>Explore luxury estates ready for instant 3D virtual tour and AR inspection.</p>
+        </div>
+      </div>
+
+      <div class="user-prop-grid" id="user-browse-grid">
+        <!-- Populated dynamically via UserPanel -->
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 4: MY TOUR BOOKINGS & INQUIRIES
+         ========================================================================== -->
+    <section class="user-tab-content" id="tab-bookings">
+      <div class="tab-header-flex">
+        <div>
+          <h2>My Tour Bookings &amp; Inquiries</h2>
+          <p>Manage your scheduled guided 3D tours, in-person showings, and agent updates.</p>
+        </div>
+        <button class="btn-user-action btn-user-primary" onclick="UserPanel.switchTab('browse')">
+          <i class="fa-solid fa-calendar-plus"></i> Request New Tour
+        </button>
+      </div>
+
+      <div class="table-responsive-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Format</th>
+              <th>Scheduled Date</th>
+              <th>Assigned Partner</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="user-all-bookings-tbody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 5: SAVED & BOOKMARKED ESTATES
+         ========================================================================== -->
+    <section class="user-tab-content" id="tab-saved">
+      <div class="tab-header-flex">
+        <div>
+          <h2>My Saved &amp; Favorite 3D Estates</h2>
+          <p>Compare luxury residences and launch virtual walkthroughs directly.</p>
+        </div>
+      </div>
+
+      <div class="user-prop-grid" id="user-saved-grid">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 6: 3D SPACE CUSTOMIZER
+         ========================================================================== -->
+    <section class="user-tab-content" id="tab-customizer">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Custom Interior Design Schemes</h2>
+          <p>Configure Italian marble, acoustic paneling, and upholstery before closing.</p>
+        </div>
+      </div>
+
+      <div class="admin-grid-2col">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-palette"></i> Active Palette: Obsidian Modernist</h3>
+            <span class="status-pill status-active">Client Approved</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 10px 0;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>Grand Salon Flooring:</span>
+              <strong style="color: var(--user-accent-cyan);">Carrara Italian Marble</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Accent Wall Coating:</span>
+              <strong style="color: var(--user-accent-cyan);">Midnight Slate Coating</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Sofa Velvet Upholstery:</span>
+              <strong style="color: var(--user-accent-cyan);">Sapphire Blue Velvet</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Customize in Real Time</h3>
+          </div>
+          <p style="color: var(--user-text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px;">
+            Open the main 3D Space Studio to customize materials and inspect physical reflections under natural sunlight
+            in WebGL.
+          </p>
+          <a href="index.html#space-customizer" class="btn-user-action btn-user-primary">
+            <i class="fa-solid fa-palette"></i> Launch Full Studio Customizer
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 7: DIRECT CONCIERGE AGENT CHAT
+         ========================================================================== -->
+    <section class="user-tab-content" id="tab-chat">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Direct Concierge &amp; Agent Messaging</h2>
+          <p>Instant communication with your assigned senior luxury partners.</p>
+        </div>
+      </div>
+
+      <div class="chat-window-card">
+        <div class="chat-header">
+          <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100" alt="Elena Rostova">
+          <div>
+            <h4 style="color: var(--user-text-primary); font-size: 0.95rem;">Elena Rostova</h4>
+            <span style="color: var(--user-accent-emerald); font-size: 0.78rem;"><i class="fa-solid fa-circle"
+                style="font-size: 0.6rem;"></i> Active Now &bull; Senior Luxury Partner</span>
+          </div>
+        </div>
+
+        <div class="chat-messages-area" id="chat-messages-area">
+          <div class="chat-msg chat-msg-agent">
+            <strong>Elena Rostova:</strong> Welcome to AR-REALTOUR! I am your dedicated portfolio partner. Let me know
+            if you would like me to prepare a 1:1 AR spatial demonstration for the Beverly Hills Glass Villa.
+          </div>
+        </div>
+
+        <form class="chat-input-bar" onsubmit="event.preventDefault(); UserPanel.sendChatMessage();">
+          <input type="text" id="chat-input-text" class="chat-input"
+            placeholder="Type a message to your luxury concierge agent..." required>
+          <button type="submit" class="btn-user-action btn-user-primary">
+            <i class="fa-solid fa-paper-plane"></i> Send
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 8: ACCOUNT PROFILE & PREFERENCES
+         ========================================================================== -->
+    <section class="user-tab-content" id="tab-profile">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Account Settings &amp; Investment Preferences</h2>
+          <p>Manage your personal details, target acquisition budget, and notification preferences.</p>
+        </div>
+      </div>
+
+      <div class="admin-card" style="max-width: 680px;">
+        <form onsubmit="UserPanel.saveProfileSettings(event)">
+          <div class="admin-form-grid">
+            <div class="admin-form-group full-width">
+              <label class="admin-form-label">Full Name</label>
+              <input type="text" id="prof-input-name" class="admin-input" required>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Email Address</label>
+              <input type="email" id="prof-input-email" class="admin-input" required>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-form-label">Phone Number</label>
+              <input type="tel" id="prof-input-phone" class="admin-input">
+            </div>
+
+            <div class="admin-form-group full-width">
+              <label class="admin-form-label">Target Investment Budget</label>
+              <select class="admin-select" id="prof-input-budget">
+                <option value="5-10">$5,000,000 &ndash; $10,000,000</option>
+                <option value="10-20" selected>$10,000,000 &ndash; $20,000,000</option>
+                <option value="20+">$20,000,000+ (Super Prime)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button type="submit" class="btn-user-action btn-user-primary">
+              <i class="fa-solid fa-floppy-disk"></i> Save Preferences
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- User Toast Notification -->
+  <div class="admin-toast" id="user-toast">
+    <i class="fa-solid fa-circle-check" style="color: var(--user-accent-emerald);"></i>
+    <span id="user-toast-text">Operation completed.</span>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="js/db.js"></script>
+  <script src="js/ar-engine.js"></script>
+  <script src="js/user-panel.js"></script>
+</body>
+
+</html>

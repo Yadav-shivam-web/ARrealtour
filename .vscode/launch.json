@@ -1,0 +1,59 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "▶ Start Full Platform (Backend + Frontend)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5000/index.html",
+      "preLaunchTask": "Start Backend Server",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Launch Main Platform (index.html)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5000/index.html",
+      "preLaunchTask": "Start Backend Server",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Launch Admin Portal (admin.html)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5000/admin.html",
+      "preLaunchTask": "Start Backend Server",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Launch User Panel (user-panel.html)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5000/user-panel.html",
+      "preLaunchTask": "Start Backend Server",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Launch Login Page (login.html)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5000/login.html",
+      "preLaunchTask": "Start Backend Server",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Launch Current Open File (Browser)",
+      "type": "msedge",
+      "request": "launch",
+      "file": "${file}"
+    },
+    {
+      "name": "Debug Backend Server (Node.js)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/server.js",
+      "cwd": "${workspaceFolder}/backend",
+      "restart": true
+    }
+  ]
+}

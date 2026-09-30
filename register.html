@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | AR-REALTOUR 3D &amp; AR Platform</title>
+  <meta name="description" content="Create your VIP account on AR-REALTOUR to explore luxury estates in interactive 3D and Augmented Reality.">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Auth Stylesheet -->
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-body">
+
+  <div class="auth-bg-ambient"></div>
+
+  <main class="auth-container">
+    <!-- Left Hero Feature Panel -->
+    <div class="auth-side-panel">
+      <div>
+        <a href="index.html" class="auth-brand">
+          <div class="auth-brand-icon">
+            <i class="fa-solid fa-cube"></i>
+          </div>
+          <span>AR-REAL<span style="color: #38bdf8;">TOUR</span></span>
+        </a>
+
+        <div class="auth-hero-feature">
+          <h2>Step Into Tomorrow's Luxury in 3D.</h2>
+          <p>
+            Create your VIP investor account to inspect unlisted architectural models in WebGL 3D, customize luxury finishes, and test spaces in Augmented Reality.
+          </p>
+
+          <ul class="auth-perks-list">
+            <li class="auth-perk-item">
+              <div class="auth-perk-icon"><i class="fa-solid fa-vr-cardboard"></i></div>
+              <span>Exclusive 3D estate walkthroughs &amp; sun angles</span>
+            </li>
+            <li class="auth-perk-item">
+              <div class="auth-perk-icon"><i class="fa-solid fa-expand"></i></div>
+              <span>WebXR Augmented Reality spatial scale inspection</span>
+            </li>
+            <li class="auth-perk-item">
+              <div class="auth-perk-icon"><i class="fa-solid fa-shield-halved"></i></div>
+              <span>Private VIP concierge tour booking access</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="auth-side-footer">
+        <span>&copy; 2026 AR-REALTOUR Technologies</span>
+        <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to 3D Platform</a>
+      </div>
+    </div>
+
+    <!-- Right Normal Form Card -->
+    <div class="auth-form-panel">
+      <div class="auth-form-header">
+        <h1>Create an Account</h1>
+        <p>Already have an account? <a href="login.html">Sign in here</a></p>
+      </div>
+
+      <!-- Alert Notification Banner -->
+      <div class="auth-alert" id="auth-alert"></div>
+
+      <!-- Clean Register Form -->
+      <form class="auth-form" id="register-form" novalidate>
+        <!-- Full Name / Username -->
+        <div class="auth-group">
+          <label class="auth-label" for="reg-name">Username or Full Name</label>
+          <div class="auth-input-wrap">
+            <i class="fa-solid fa-user input-icon-left"></i>
+            <input 
+              type="text" 
+              id="reg-name" 
+              class="auth-input" 
+              placeholder="e.g. Rahul Sharma" 
+              autocomplete="name"
+              required
+            >
+          </div>
+          <span class="auth-error-msg" id="reg-name-error"></span>
+        </div>
+
+        <!-- Email Address -->
+        <div class="auth-group">
+          <label class="auth-label" for="reg-email">Email Address</label>
+          <div class="auth-input-wrap">
+            <i class="fa-solid fa-envelope input-icon-left"></i>
+            <input 
+              type="email" 
+              id="reg-email" 
+              class="auth-input" 
+              placeholder="name@example.com" 
+              autocomplete="email"
+              required
+            >
+          </div>
+          <span class="auth-error-msg" id="reg-email-error"></span>
+        </div>
+
+        <!-- Password -->
+        <div class="auth-group">
+          <label class="auth-label" for="reg-password">Password</label>
+          <div class="auth-input-wrap">
+            <i class="fa-solid fa-lock input-icon-left"></i>
+            <input 
+              type="password" 
+              id="reg-password" 
+              class="auth-input" 
+              placeholder="Create a strong password" 
+              autocomplete="new-password"
+              required
+            >
+            <button type="button" class="btn-eye-toggle" aria-label="Toggle password visibility">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+          <div class="password-strength-wrap">
+            <div class="strength-bar-bg">
+              <div class="strength-bar-fill" id="strength-bar-fill"></div>
+            </div>
+            <span class="strength-text" id="strength-text">Minimum 6 characters</span>
+          </div>
+          <span class="auth-error-msg" id="reg-password-error"></span>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="auth-group">
+          <label class="auth-label" for="reg-confirm-password">Confirm Password</label>
+          <div class="auth-input-wrap">
+            <i class="fa-solid fa-shield-halved input-icon-left"></i>
+            <input 
+              type="password" 
+              id="reg-confirm-password" 
+              class="auth-input" 
+              placeholder="Confirm your password" 
+              autocomplete="new-password"
+              required
+            >
+          </div>
+          <span class="auth-error-msg" id="reg-confirm-password-error"></span>
+        </div>
+
+        <!-- Terms Checkbox -->
+        <div class="auth-remember-row">
+          <label class="auth-checkbox-label">
+            <input type="checkbox" id="reg-terms" class="auth-checkbox" checked required>
+            <span style="font-size: 0.825rem;">I agree to the <a href="#" class="auth-link">Terms</a> &amp; <a href="#" class="auth-link">Privacy Policy</a></span>
+          </label>
+        </div>
+        <span class="auth-error-msg" id="reg-terms-error"></span>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-auth-submit">
+          <span>Create Account &amp; View Rooms</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

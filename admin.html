@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Management Portal | AR-REALTOUR</title>
+  <meta name="description" content="AR-REALTOUR Executive Admin Dashboard & Real Estate 3D Model Management Portal.">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="css/admin.css">
+
+  <!-- Three.js for Admin 3D Model Previewer -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+
+<body class="admin-body">
+  <div class="admin-ambient-glow"></div>
+
+  <!-- ==========================================================================
+       SIDEBAR NAVIGATION (Matches Diagram Admin Modules)
+       ========================================================================== -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <div class="admin-logo-icon">
+        <i class="fa-solid fa-cube"></i>
+      </div>
+      <div class="admin-logo-text">
+        AR-REAL<span>TOUR</span>
+      </div>
+      <span class="admin-badge-role">Admin</span>
+    </div>
+
+    <nav class="admin-nav">
+      <div class="admin-nav-section-title">Overview</div>
+      <a class="admin-nav-link active" data-tab="dashboard">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Dashboard</span>
+      </a>
+      <a class="admin-nav-link" data-tab="analytics">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Reports &amp; Analytics</span>
+      </a>
+
+      <div class="admin-nav-section-title">Core Management</div>
+      <a class="admin-nav-link" data-tab="properties">
+        <i class="fa-solid fa-building-circle-check"></i>
+        <span>Add / Edit Properties</span>
+        <span class="nav-counter" id="sidebar-prop-count">6</span>
+      </a>
+      <a class="admin-nav-link" data-tab="models3d">
+        <i class="fa-solid fa-vr-cardboard"></i>
+        <span>Manage 3D Models</span>
+        <span class="nav-counter" id="sidebar-models-count">4</span>
+      </a>
+      <a class="admin-nav-link" data-tab="users">
+        <i class="fa-solid fa-users-gear"></i>
+        <span>Manage Users</span>
+        <span class="nav-counter" id="sidebar-users-count">6</span>
+      </a>
+      <a class="admin-nav-link" data-tab="inquiries">
+        <i class="fa-solid fa-envelope-open-text"></i>
+        <span>Manage Inquiries</span>
+        <span class="nav-counter" id="sidebar-inquiries-count" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">4</span>
+      </a>
+
+      <div class="admin-nav-section-title">System &amp; Data</div>
+      <a class="admin-nav-link" data-tab="database">
+        <i class="fa-solid fa-database"></i>
+        <span>Database Module</span>
+      </a>
+    </nav>
+
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-card">
+        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&auto=format&fit=crop&q=80" alt="Admin Avatar" class="admin-avatar">
+        <div class="admin-user-info">
+          <h4>Administrator</h4>
+          <p>Super Admin Access</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==========================================================================
+       MAIN ADMIN CONTENT AREA
+       ========================================================================== -->
+  <main class="admin-main">
+    <!-- Top Bar -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title" id="page-current-title">Executive Dashboard</h1>
+      </div>
+
+      <div class="topbar-right">
+        <a href="user-panel.html" class="btn-topbar">
+          <i class="fa-solid fa-user-gear"></i>
+          <span>User Dashboard</span>
+        </a>
+        <a href="index.html" class="btn-topbar">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span>View Live User Website</span>
+        </a>
+        <button class="btn-topbar" onclick="Admin.openAddPropertyModal()">
+          <i class="fa-solid fa-plus"></i>
+          <span>New Property</span>
+        </button>
+        <a href="login.html" class="btn-topbar" style="color: var(--admin-accent-rose);" title="Sign Out">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
+      </div>
+    </header>
+
+    <!-- ==========================================================================
+         TAB 1: EXECUTIVE DASHBOARD
+         ========================================================================== -->
+    <section class="admin-tab-content active" id="tab-dashboard">
+      <div class="tab-header-flex">
+        <div>
+          <h2>System Performance &amp; Real Estate Intelligence</h2>
+          <p>Real-time analytics for 3D walkthroughs, WebXR interactions, and client tour inquiries.</p>
+        </div>
+        <div>
+          <button class="btn-topbar btn-topbar-primary" onclick="Admin.refreshAll()">
+            <i class="fa-solid fa-rotate"></i> Sync Data
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <span>Portfolio Value</span>
+            <h3 id="kpi-portfolio-val">$82.8M</h3>
+            <span class="kpi-subtext"><i class="fa-solid fa-arrow-trend-up"></i> +14.2% this month</span>
+          </div>
+          <div class="kpi-icon-box">
+            <i class="fa-solid fa-sack-dollar"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-purple">
+          <div class="kpi-info">
+            <span>Active 3D Estates</span>
+            <h3 id="kpi-total-props">6</h3>
+            <span class="kpi-subtext"><i class="fa-solid fa-vr-cardboard"></i> 100% WebGL Ready</span>
+          </div>
+          <div class="kpi-icon-box">
+            <i class="fa-solid fa-city"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-emerald">
+          <div class="kpi-info">
+            <span>3D &amp; AR Tours Taken</span>
+            <h3 id="kpi-total-tours">5,590</h3>
+            <span class="kpi-subtext"><i class="fa-solid fa-eye"></i> Avg 4.8m session</span>
+          </div>
+          <div class="kpi-icon-box">
+            <i class="fa-solid fa-cubes"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-amber">
+          <div class="kpi-info">
+            <span>Pending Inquiries</span>
+            <h3 id="kpi-pending-inq">4</h3>
+            <span class="kpi-subtext" style="color: var(--admin-accent-amber);"><i class="fa-solid fa-clock"></i> Action Needed</span>
+          </div>
+          <div class="kpi-icon-box">
+            <i class="fa-solid fa-comments"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2-Col Split: 3D Interactions Chart & Live Activity Feed -->
+      <div class="admin-grid-2col">
+        <!-- 3D Walkthrough Analytics Chart -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-chart-column"></i> Weekly 3D Model &amp; AR Visualizations</h3>
+            <span style="font-size: 0.8rem; color: var(--admin-text-muted);">Last 7 Days</span>
+          </div>
+          
+          <div class="chart-bars-container">
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">420</span>
+              <div class="chart-bar" style="height: 45%;"></div>
+              <span class="chart-label">Mon</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">580</span>
+              <div class="chart-bar" style="height: 60%;"></div>
+              <span class="chart-label">Tue</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">790</span>
+              <div class="chart-bar" style="height: 80%;"></div>
+              <span class="chart-label">Wed</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">640</span>
+              <div class="chart-bar" style="height: 68%;"></div>
+              <span class="chart-label">Thu</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">920</span>
+              <div class="chart-bar" style="height: 95%; background: linear-gradient(180deg, #38bdf8 0%, #6366f1 100%);"></div>
+              <span class="chart-label">Fri</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">840</span>
+              <div class="chart-bar" style="height: 88%;"></div>
+              <span class="chart-label">Sat</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">710</span>
+              <div class="chart-bar" style="height: 74%;"></div>
+              <span class="chart-label">Sun</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Platform Activity Stream -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-bolt"></i> Live Activity Feed</h3>
+            <span class="status-pill status-active">Realtime</span>
+          </div>
+
+          <div class="activity-list" id="dashboard-activity-list">
+            <div class="activity-item">
+              <div class="activity-icon"><i class="fa-solid fa-calendar-check"></i></div>
+              <div class="activity-details">
+                <h5>New Guided 3D Tour Requested</h5>
+                <p>Alex Rivera &bull; The Solstice Glass Villa</p>
+              </div>
+              <span class="activity-time">5m ago</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;"><i class="fa-solid fa-expand"></i></div>
+              <div class="activity-details">
+                <h5>AR Session Launched (Mobile)</h5>
+                <p>Skyline Obsidian Penthouse</p>
+              </div>
+              <span class="activity-time">18m ago</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;"><i class="fa-solid fa-user-plus"></i></div>
+              <div class="activity-details">
+                <h5>New VIP Client Registered</h5>
+                <p>Jonathan Sterling (Principal Architect)</p>
+              </div>
+              <span class="activity-time">1h ago</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;"><i class="fa-solid fa-cube"></i></div>
+              <div class="activity-details">
+                <h5>3D Asset LOD Optimized</h5>
+                <p>solstice_villa_v4.glb (14.8 MB)</p>
+              </div>
+              <span class="activity-time">3h ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Recent Inquiries Preview -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h3><i class="fa-solid fa-envelope"></i> Recent Lead Inquiries</h3>
+          <button class="btn-topbar" onclick="Admin.switchTab('inquiries')">View All Inquiries</button>
+        </div>
+        <div class="table-responsive-wrap">
+          <table class="admin-table" id="dashboard-inquiries-table">
+            <thead>
+              <tr>
+                <th>Client Name</th>
+                <th>Property</th>
+                <th>Tour Format</th>
+                <th>Preferred Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-inquiries-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 2: ADD / EDIT PROPERTIES MODULE
+         ========================================================================== -->
+    <section class="admin-tab-content" id="tab-properties">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Add &amp; Edit 3D Properties</h2>
+          <p>Create, update specs, manage pricing, and assign 3D models to real estate listings.</p>
+        </div>
+        <button class="btn-topbar btn-topbar-primary" onclick="Admin.openAddPropertyModal()">
+          <i class="fa-solid fa-plus"></i> Add New Property
+        </button>
+      </div>
+
+      <div class="table-responsive-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Specs (Beds/Baths/SqFt)</th>
+              <th>3D Model Attached</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="properties-admin-tbody">
+            <!-- Rendered dynamically via Admin.renderProperties() -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 3: MANAGE 3D MODELS MODULE (.glb / .gltf Assets)
+         ========================================================================== -->
+    <section class="admin-tab-content" id="tab-models3d">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Manage 3D Architectural Assets</h2>
+          <p>GLB &amp; GLTF 2.0 3D models, geometry optimization, polycounts, and live Three.js viewport.</p>
+        </div>
+        <button class="btn-topbar btn-topbar-primary" onclick="Admin.openUploadModelModal()">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Upload 3D Model
+        </button>
+      </div>
+
+      <div class="model-manager-grid">
+        <!-- 3D Models Asset Table -->
+        <div class="table-responsive-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Asset Name</th>
+                <th>Format &amp; Size</th>
+                <th>Polygons / Mesh</th>
+                <th>Assigned Property</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="models-admin-tbody">
+              <!-- Rendered dynamically via Admin.renderModels() -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Live Admin 3D Canvas Previewer -->
+        <div class="admin-card" style="padding: 16px;">
+          <div class="admin-card-header" style="margin-bottom: 12px;">
+            <h3><i class="fa-solid fa-cube"></i> Interactive 3D Model Inspector</h3>
+            <span class="status-pill status-active" id="model-preview-name">solstice_villa_v4.glb</span>
+          </div>
+
+          <div class="admin-3d-preview-box">
+            <canvas id="admin-preview-canvas" class="admin-3d-preview-canvas"></canvas>
+            <div class="admin-3d-badge">
+              <i class="fa-solid fa-eye"></i> Orbit: Drag &bull; Scroll: Zoom
+            </div>
+            <div class="admin-3d-controls-hud">
+              <button class="btn-topbar btn-topbar-primary" onclick="Admin.togglePreviewWireframe()">
+                <i class="fa-solid fa-border-none"></i> Wireframe
+              </button>
+              <button class="btn-topbar" onclick="Admin.resetPreviewCamera()">
+                <i class="fa-solid fa-expand"></i> Reset View
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 4: MANAGE USERS MODULE
+         ========================================================================== -->
+    <section class="admin-tab-content" id="tab-users">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Manage Platform Users &amp; Agents</h2>
+          <p>Roster of VIP buyers, real estate agents, and platform administrators.</p>
+        </div>
+        <button class="btn-topbar btn-topbar-primary" onclick="Admin.openAddUserModal()">
+          <i class="fa-solid fa-user-plus"></i> Add New User
+        </button>
+      </div>
+
+      <div class="table-responsive-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>User Name &amp; Email</th>
+              <th>Role</th>
+              <th>Phone</th>
+              <th>3D Tours Taken</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-admin-tbody">
+            <!-- Rendered dynamically via Admin.renderUsers() -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 5: MANAGE INQUIRIES & TOURS MODULE
+         ========================================================================== -->
+    <section class="admin-tab-content" id="tab-inquiries">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Manage Inquiries &amp; Tour Bookings</h2>
+          <p>Lead pipeline, virtual 3D tour requests, AR spatial demos, and agent assignments.</p>
+        </div>
+        <button class="btn-topbar" onclick="Admin.exportInquiriesCSV()">
+          <i class="fa-solid fa-file-csv"></i> Export CSV
+        </button>
+      </div>
+
+      <div class="table-responsive-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Client Name</th>
+              <th>Target Property</th>
+              <th>Tour Type</th>
+              <th>Scheduled Date</th>
+              <th>Assigned Agent</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inquiries-admin-tbody">
+            <!-- Rendered dynamically via Admin.renderInquiries() -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 6: REPORTS & ANALYTICS MODULE
+         ========================================================================== -->
+    <section class="admin-tab-content" id="tab-analytics">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Reports &amp; Engagement Analytics</h2>
+          <p>Deep-dive conversion statistics, WebXR engagement, and property demand metrics.</p>
+        </div>
+      </div>
+
+      <div class="admin-grid-2col">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-chart-pie"></i> Property Category Distribution</h3>
+          </div>
+          <div style="padding: 20px 0; display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 6px;">
+                <span>Modern Villas</span>
+                <span style="font-weight: 700; color: var(--admin-accent-cyan);">45%</span>
+              </div>
+              <div style="height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                <div style="width: 45%; height: 100%; background: var(--admin-accent-cyan);"></div>
+              </div>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 6px;">
+                <span>Sky Penthouses</span>
+                <span style="font-weight: 700; color: var(--admin-accent-purple);">35%</span>
+              </div>
+              <div style="height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                <div style="width: 35%; height: 100%; background: var(--admin-accent-purple);"></div>
+              </div>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 6px;">
+                <span>Waterfront / Coastal</span>
+                <span style="font-weight: 700; color: var(--admin-accent-emerald);">20%</span>
+              </div>
+              <div style="height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                <div style="width: 20%; height: 100%; background: var(--admin-accent-emerald);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-mobile-screen"></i> Device &amp; Technology Breakdown</h3>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 10px 0;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-desktop" style="color: var(--admin-accent-cyan);"></i> Desktop WebGL 3D</span>
+              <span style="font-weight: 700;">64%</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-mobile-screen-button" style="color: var(--admin-accent-purple);"></i> Mobile WebXR / AR</span>
+              <span style="font-weight: 700;">28%</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-vr-cardboard" style="color: var(--admin-accent-amber);"></i> VR Headsets</span>
+              <span style="font-weight: 700;">8%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         TAB 7: DATABASE MODULE INSPECTOR
+         ========================================================================== -->
+    <section class="admin-tab-content" id="tab-database">
+      <div class="tab-header-flex">
+        <div>
+          <h2>Database Module (Client-Side Storage Engine)</h2>
+          <p>Inspect raw records stored in the client database layer for Users, Properties, 3D Models, and Inquiries.</p>
+        </div>
+        <button class="btn-topbar" style="background: #fdf2f8; color: #db2777; border-color: #f472b6;" onclick="Admin.resetDatabasePrompt()">
+          <i class="fa-solid fa-arrow-rotate-left"></i> Reset to Default Seed Data
+        </button>
+      </div>
+
+      <div class="admin-grid-2col">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-code"></i> Live Collections JSON Viewer</h3>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-topbar" onclick="Admin.viewRawJSON('properties')">Properties</button>
+              <button class="btn-topbar" onclick="Admin.viewRawJSON('models3d')">3D Models</button>
+              <button class="btn-topbar" onclick="Admin.viewRawJSON('users')">Users</button>
+              <button class="btn-topbar" onclick="Admin.viewRawJSON('inquiries')">Inquiries</button>
+            </div>
+          </div>
+          <pre id="raw-json-inspector" style="background: #f8fafc; padding: 18px; border-radius: 8px; border: 1px solid #e2e8f0; color: #db2777; max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; line-height: 1.5;"></pre>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fa-solid fa-circle-nodes"></i> Architecture Data Flow</h3>
+          </div>
+          <p style="color: var(--admin-text-muted); font-size: 0.9rem; line-height: 1.7;">
+            The <strong>Database Module</strong> continuously synchronizes all changes between the User Frontend, 3D/AR Visualization Engine, and Admin Management Portal. When you add a new property, modify a 3D asset, or update an inquiry status, it instantly updates across the entire website without requiring page reloads.
+          </p>
+          <div style="margin-top: 20px; padding: 16px; background: #fdf2f8; border-radius: 10px; border: 1px solid #fbcfe8;">
+            <h5 style="color: var(--admin-text-primary); font-size: 0.92rem; margin-bottom: 6px;"><i class="fa-solid fa-circle-check" style="color: var(--admin-accent-emerald);"></i> Active Storage Status</h5>
+            <p style="color: var(--admin-text-muted); font-size: 0.82rem;">Persistent localStorage sync &bull; 0 external DB latency &bull; Full CRUD active</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================================================
+       MODAL: ADD / EDIT PROPERTY
+       ========================================================================== -->
+  <div class="admin-modal-backdrop" id="modal-property">
+    <div class="admin-modal-dialog">
+      <div class="admin-modal-header">
+        <h3 id="prop-modal-title">Add New 3D Property</h3>
+        <button class="admin-modal-close" onclick="Admin.closeModal('modal-property')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="form-property" onsubmit="Admin.handlePropertySubmit(event)">
+        <input type="hidden" id="form-prop-id" value="">
+        <div class="admin-form-grid">
+          <div class="admin-form-group full-width">
+            <label class="admin-form-label">Property Title</label>
+            <input type="text" id="form-prop-title" class="admin-input" placeholder="e.g. The Luminary Sky Villa" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Category</label>
+            <select id="form-prop-category" class="admin-select">
+              <option value="villas">Modern Luxury Villa</option>
+              <option value="penthouses">Sky Penthouse</option>
+              <option value="coastal">Waterfront Estate</option>
+            </select>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Price (USD)</label>
+            <input type="number" id="form-prop-price" class="admin-input" placeholder="8500000" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Location (City, State)</label>
+            <input type="text" id="form-prop-location" class="admin-input" placeholder="Beverly Hills, CA" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Full Street Address</label>
+            <input type="text" id="form-prop-address" class="admin-input" placeholder="1048 Solstice Way" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Bedrooms</label>
+            <input type="number" id="form-prop-beds" class="admin-input" value="5" min="1" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Bathrooms</label>
+            <input type="number" id="form-prop-baths" class="admin-input" value="6" min="1" step="0.5" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Square Feet (SqFt)</label>
+            <input type="number" id="form-prop-sqft" class="admin-input" value="7200" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Attached 3D Model</label>
+            <select id="form-prop-model" class="admin-select">
+              <option value="model-1">Modernist Glass Villa 3D (solstice_villa_v4.glb)</option>
+              <option value="model-2">Skyline Penthouse Duplex 3D (tribeca_penthouse_hi.glb)</option>
+              <option value="model-3">Azure Waterfront Estate 3D (waterfront_residence.glb)</option>
+            </select>
+          </div>
+
+          <div class="admin-form-group full-width">
+            <label class="admin-form-label">Featured Image URL</label>
+            <input type="url" id="form-prop-image" class="admin-input" placeholder="https://images.unsplash.com/..." required>
+          </div>
+
+          <div class="admin-form-group full-width">
+            <label class="admin-form-label">Description</label>
+            <textarea id="form-prop-desc" class="admin-textarea" rows="3" placeholder="Enter architectural highlights, views, and materials..."></textarea>
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-topbar" onclick="Admin.closeModal('modal-property')">Cancel</button>
+          <button type="submit" class="btn-topbar btn-topbar-primary"><i class="fa-solid fa-floppy-disk"></i> Save Property</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: ADD NEW USER
+       ========================================================================== -->
+  <div class="admin-modal-backdrop" id="modal-user">
+    <div class="admin-modal-dialog">
+      <div class="admin-modal-header">
+        <h3>Add New Platform User</h3>
+        <button class="admin-modal-close" onclick="Admin.closeModal('modal-user')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="form-user" onsubmit="Admin.handleUserSubmit(event)">
+        <div class="admin-form-grid">
+          <div class="admin-form-group full-width">
+            <label class="admin-form-label">Full Name</label>
+            <input type="text" id="form-user-name" class="admin-input" placeholder="e.g. Arthur Pendelton" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Email Address</label>
+            <input type="email" id="form-user-email" class="admin-input" placeholder="arthur@example.com" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Phone Number</label>
+            <input type="tel" id="form-user-phone" class="admin-input" placeholder="+1 (555) 019-2834">
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">User Role</label>
+            <select id="form-user-role" class="admin-select">
+              <option value="user">VIP Buyer / Investor</option>
+              <option value="agent">Luxury Listing Agent</option>
+              <option value="admin">Platform Super Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-topbar" onclick="Admin.closeModal('modal-user')">Cancel</button>
+          <button type="submit" class="btn-topbar btn-topbar-primary"><i class="fa-solid fa-user-plus"></i> Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: RESPOND TO INQUIRY
+       ========================================================================== -->
+  <div class="admin-modal-backdrop" id="modal-inquiry">
+    <div class="admin-modal-dialog">
+      <div class="admin-modal-header">
+        <h3>Manage Client Tour Inquiry</h3>
+        <button class="admin-modal-close" onclick="Admin.closeModal('modal-inquiry')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="form-inquiry" onsubmit="Admin.handleInquirySubmit(event)">
+        <input type="hidden" id="form-inq-id" value="">
+        <div class="admin-form-grid">
+          <div class="admin-form-group full-width">
+            <label class="admin-form-label">Client Details</label>
+            <input type="text" id="form-inq-client" class="admin-input" readonly>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Property</label>
+            <input type="text" id="form-inq-prop" class="admin-input" readonly>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">Inquiry Status</label>
+            <select id="form-inq-status" class="admin-select">
+              <option value="New">New</option>
+              <option value="In Review">In Review</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+
+          <div class="admin-form-group full-width">
+            <label class="admin-form-label">Client Message / Preferences</label>
+            <textarea id="form-inq-notes" class="admin-textarea" rows="2" readonly></textarea>
+          </div>
+
+          <div class="admin-form-group full-width">
+            <label class="admin-form-label">Agent Internal Notes</label>
+            <textarea id="form-inq-admin-note" class="admin-textarea" rows="3" placeholder="Enter follow-up notes, calendar schedule link, or confirmation details..."></textarea>
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-topbar" onclick="Admin.closeModal('modal-inquiry')">Cancel</button>
+          <button type="submit" class="btn-topbar btn-topbar-primary"><i class="fa-solid fa-check"></i> Update Status</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Popover -->
+  <div class="admin-toast" id="admin-toast">
+    <i class="fa-solid fa-circle-check" style="color: var(--admin-accent-emerald);"></i>
+    <span id="admin-toast-text">Operation completed successfully.</span>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="js/db.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

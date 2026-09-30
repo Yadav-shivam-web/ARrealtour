@@ -1,0 +1,722 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR-REALTOUR | Interactive 3D & AR Real Estate Visualization Platform</title>
+  <meta name="description" content="AR-REALTOUR - Next-generation interactive 3D and WebXR Augmented Reality luxury real estate platform. Virtual walkthroughs, AR tabletop placement, and full admin management.">
+
+  <!-- Favicon & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Three.js and OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       NAVIGATION BAR
+       ========================================================================== -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">
+          <i class="fa-solid fa-cube"></i>
+        </div>
+        <span>AR-REAL<span class="gold-gradient-text">TOUR</span></span>
+        <span class="logo-tag">3D &bull; AR PLATFORM</span>
+      </a>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#tour-studio" class="nav-link active">3D Virtual Tour</a></li>
+        <li><a href="#properties-section" class="nav-link">Properties</a></li>
+        <li><a href="#space-customizer" class="nav-link">Space Customizer</a></li>
+        <li><a href="ar-view.html" target="_blank" class="nav-link" style="color: #db2777; font-weight: 700;"><i class="fa-solid fa-mobile-screen-button"></i> AR View</a></li>
+        <li><a href="user-panel.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> User Panel</a></li>
+        <li><a href="javascript:void(0)" onclick="App.openArchitectureModal()" class="nav-link"><i class="fa-solid fa-diagram-project"></i> System Blueprint</a></li>
+        <li><a href="admin.html" class="nav-link"><i class="fa-solid fa-user-shield"></i> Admin Portal</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Default State: Login & Register Links -->
+        <div id="nav-auth-buttons" style="display: flex; align-items: center; gap: 12px;">
+          <a href="user-panel.html" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-user"></i> User Panel
+          </a>
+          <a href="admin.html" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-gauge"></i> Admin Portal
+          </a>
+          <a href="login.html" class="auth-nav-link">Sign In</a>
+          <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+        </div>
+
+        <!-- Logged In State Badge -->
+        <div id="nav-user-badge" class="nav-user-badge">
+          <a href="user-panel.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit;" title="Open User Dashboard">
+            <div class="nav-avatar" id="nav-user-avatar">A</div>
+            <span class="nav-user-name" id="nav-user-name">Alex Rivera</span>
+          </a>
+          <button class="btn-logout" id="nav-logout-btn" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+
+        <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==========================================================================
+       HERO SECTION
+       ========================================================================== -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          <span>Interactive 3D &amp; AR Based Real Estate Visualization Platform</span>
+        </div>
+
+        <h1 class="hero-title">
+          Explore Architecture <br>
+          <span class="gradient-text">in Full 3D &amp; AR</span> <br>
+          Before Acquisition.
+        </h1>
+
+        <p class="hero-desc">
+          Immerse yourself in world-class architecture with WebGL 3D walkthroughs, WebXR Augmented Reality scale testing, and complete administrative property &amp; lead management.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="#tour-studio" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-vr-cardboard"></i> Launch 3D Studio
+          </a>
+          <button class="btn btn-secondary btn-lg" data-launch-ar="prop-1">
+            <i class="fa-solid fa-expand"></i> Experience in AR
+          </button>
+          <a href="admin.html" class="btn btn-secondary btn-lg">
+            <i class="fa-solid fa-shield-halved"></i> Admin Portal
+          </a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hero-stat-item">
+            <h3>$2.4B+</h3>
+            <p>3D Properties Sold</p>
+          </div>
+          <div class="hero-stat-item">
+            <h3>60 FPS</h3>
+            <p>Real-Time WebGL</p>
+          </div>
+          <div class="hero-stat-item">
+            <h3>99.4%</h3>
+            <p>Client Satisfaction</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SEARCH & FILTER BAR
+       ========================================================================== -->
+  <section class="search-filter-section container">
+    <div class="search-box-card">
+      <div class="search-tabs">
+        <button type="button" class="search-tab active" data-search-category="villas"><i class="fa-solid fa-house"></i> Buy 3D Villa</button>
+        <button type="button" class="search-tab" data-search-category="penthouses"><i class="fa-solid fa-building"></i> Penthouses</button>
+        <button type="button" class="search-tab" data-search-category="rentals"><i class="fa-solid fa-key"></i> VIP Rentals</button>
+      </div>
+
+      <form id="hero-search-form" class="search-form-grid">
+        <div class="form-group">
+          <label class="form-label" for="search-location"><i class="fa-solid fa-location-dot"></i> Location</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-location" class="form-input" placeholder="Mumbai, Pune, Delhi, Noida...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="search-type"><i class="fa-solid fa-layer-group"></i> Property Category</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-landmark"></i>
+            <select id="search-type" class="form-select">
+              <option value="all">All Architectural Types</option>
+              <option value="villas">Modern Luxury Villas &amp; Studios</option>
+              <option value="penthouses">Sky Duplex Penthouses</option>
+              <option value="rentals">VIP Rentals</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="search-price"><i class="fa-solid fa-indian-rupee-sign"></i> Max Budget (₹)</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-tags"></i>
+            <select id="search-price" class="form-select">
+              <option value="999999999">Any Budget (₹)</option>
+              <option value="10000000">Up to ₹1.00 Crore</option>
+              <option value="50000000">Up to ₹5.00 Crore</option>
+              <option value="100000000">Up to ₹10.00 Crore</option>
+              <option value="200000000">Up to ₹20.00 Crore+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="search-beds"><i class="fa-solid fa-bed"></i> Bed Count / Scale</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-door-open"></i>
+            <select id="search-beds" class="form-select">
+              <option value="all">Any Scale (Small &amp; Large)</option>
+              <option value="1">1+ BHK / Studio (Small Home)</option>
+              <option value="2">2+ BHK (Small Home)</option>
+              <option value="4">4+ BHK (Large Home)</option>
+              <option value="5">5+ BHK (Large Home)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="height: 48px;">
+          <i class="fa-solid fa-sliders"></i> Search 3D
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       INTERACTIVE 3D VIRTUAL TOUR STUDIO SECTION
+       ========================================================================== -->
+  <section class="tour-studio-section container" id="tour-studio">
+    <div class="text-center" style="margin-bottom: 24px;">
+      <span class="section-tag"><i class="fa-solid fa-cube"></i> Interactive 3D Real Estate Showcase</span>
+      <h2 class="section-title">Aura Bay Luxury Compact Studio &bull; Bandra West, Mumbai (₹1.85 Cr)</h2>
+      <p class="section-subtitle" style="margin: 0 auto 20px;">
+        Explore 4 detailed Indian 3D architectural models (2 Small Homes &bull; 2 Large Homes) across Mumbai, Pune, Delhi, and Noida. Inspect visible living rooms, bedrooms, and modular kitchens.
+      </p>
+
+      <!-- 4 3D Real Estate Models Interactive Switcher Bar -->
+      <div class="model-selector-bar" id="model-selector-bar">
+        <button class="model-select-btn active" data-model-select="mumbai">
+          <i class="fa-solid fa-building-user"></i>
+          <span>Mumbai Studio (Small &bull; ₹1.85 Cr)</span>
+        </button>
+        <button class="model-select-btn" data-model-select="pune">
+          <i class="fa-solid fa-house-chimney-window"></i>
+          <span>Pune Haven (Small &bull; ₹78 Lakh)</span>
+        </button>
+        <button class="model-select-btn" data-model-select="delhi">
+          <i class="fa-solid fa-chess-rook"></i>
+          <span>Delhi Manor (Large &bull; ₹14.50 Cr)</span>
+        </button>
+        <button class="model-select-btn" data-model-select="noida">
+          <i class="fa-solid fa-city"></i>
+          <span>Noida Penthouse (Large &bull; ₹5.95 Cr)</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="tour-studio-wrapper">
+      <!-- Top Control Bar -->
+      <div class="tour-studio-header">
+        <div class="tour-studio-title">
+          <span class="badge badge-3d"><i class="fa-solid fa-circle-dot"></i> Live WebGL</span>
+          <h3>Architectural Model Viewer</h3>
+        </div>
+
+        <div class="tour-controls-bar">
+          <!-- Atmosphere Lighting Toggles -->
+          <div class="control-pill-group">
+            <button class="control-pill-btn active" data-lighting="day">
+              <i class="fa-solid fa-sun"></i> Day
+            </button>
+            <button class="control-pill-btn" data-lighting="sunset">
+              <i class="fa-solid fa-cloud-sun"></i> Sunset
+            </button>
+            <button class="control-pill-btn" data-lighting="night">
+              <i class="fa-solid fa-moon"></i> Night
+            </button>
+          </div>
+
+          <!-- Camera Preset Angles -->
+          <div class="control-pill-group">
+            <button class="control-pill-btn active" data-view="orbit">
+              <i class="fa-solid fa-arrows-spin"></i> Orbit
+            </button>
+            <button class="control-pill-btn" data-view="floorplan">
+              <i class="fa-solid fa-map"></i> Floorplan
+            </button>
+            <button class="control-pill-btn" data-view="pool">
+              <i class="fa-solid fa-water-ladder"></i> Pool
+            </button>
+            <button class="control-pill-btn" data-view="interior">
+              <i class="fa-solid fa-couch"></i> Living
+            </button>
+            <button class="control-pill-btn" data-view="master">
+              <i class="fa-solid fa-bed"></i> Suite
+            </button>
+            <button class="control-pill-btn" data-view="rooftop">
+              <i class="fa-solid fa-sun"></i> Roof
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D Canvas Viewport Container -->
+      <div class="tour-canvas-container" id="tour-canvas-container">
+        <canvas id="main-3d-canvas"></canvas>
+
+        <!-- Measurement HUD Banner -->
+        <div class="measure-hud" id="measure-hud">
+          <i class="fa-solid fa-ruler-combined" style="color: var(--primary);"></i>
+          <span>Laser Dimension: <strong>24.5 m (L) &times; 18.2 m (W) &times; 8.4 m (H)</strong> &bull; Area: 7,200 sq ft</span>
+        </div>
+
+        <!-- Top Right HUD Tools -->
+        <div class="canvas-hud-top-right">
+          <button class="hud-btn" id="btn-wireframe" onclick="Villa3D.toggleWireframe()" title="Toggle Wireframe Mode">
+            <i class="fa-solid fa-border-none"></i>
+          </button>
+          <button class="hud-btn" id="btn-measure" onclick="Villa3D.toggleMeasurementTool()" title="3D Laser Measurement Tool">
+            <i class="fa-solid fa-ruler"></i>
+          </button>
+          <button class="hud-btn" data-launch-ar="prop-1" title="Experience in Augmented Reality (AR)">
+            <i class="fa-solid fa-expand"></i>
+          </button>
+          <button class="hud-btn active" id="btn-autorotate" title="Toggle Auto Rotation">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+          <button class="hud-btn" id="btn-reset-cam" title="Reset Viewpoint">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </div>
+
+        <!-- Hotspot Spec Card Popover (Active on pin click) -->
+        <div class="hotspot-card" id="hotspot-card">
+          <div class="hotspot-card-header">
+            <span class="hotspot-badge" id="hotspot-badge">Amenity</span>
+            <button class="hotspot-card-close" id="hotspot-close-btn" aria-label="Close">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <h4 class="hotspot-title" id="hotspot-title">Master Sky Suite</h4>
+          <p class="hotspot-desc" id="hotspot-desc">
+            Private master penthouse suite featuring 12-foot floor-to-ceiling glass, Italian porcelain en-suite, and wraparound sunset terrace.
+          </p>
+          <div class="hotspot-specs" id="hotspot-specs">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Bottom Controls Guide -->
+        <div class="canvas-instructions">
+          <div class="instruction-item">
+            <kbd>Left Click + Drag</kbd> Rotate 3D Model
+          </div>
+          <div class="instruction-item">
+            <kbd>Right Click + Drag</kbd> Pan
+          </div>
+          <div class="instruction-item">
+            <kbd>Scroll</kbd> Zoom In/Out
+          </div>
+          <div class="instruction-item">
+            <kbd>Click Pins</kbd> Inspect Specs
+          </div>
+        </div>
+      </div>
+
+      <!-- Studio Footer: Live Meta & Real-time Material Swapper -->
+      <div class="tour-studio-footer">
+        <div class="property-live-meta">
+          <div class="meta-price-box">
+            <h4 id="tour-studio-meta-price">₹1.85 Cr</h4>
+            <span id="tour-studio-meta-loc">Small Home &bull; Bandra West, Mumbai</span>
+          </div>
+
+          <div class="meta-stats-row">
+            <div class="meta-stat" id="tour-meta-beds"><i class="fa-solid fa-bed"></i> 1 BHK</div>
+            <div class="meta-stat" id="tour-meta-baths"><i class="fa-solid fa-bath"></i> 2 Baths</div>
+            <div class="meta-stat" id="tour-meta-sqft"><i class="fa-solid fa-ruler-combined"></i> 850 sq ft</div>
+            <div class="meta-stat" id="tour-meta-city"><i class="fa-solid fa-location-dot"></i> Mumbai</div>
+          </div>
+        </div>
+
+        <!-- Material Switcher -->
+        <div class="material-customizer-box">
+          <span class="material-label"><i class="fa-solid fa-palette"></i> Salon Flooring:</span>
+          <div class="material-options-group">
+            <button class="material-swatch active" data-material="marble">
+              <span class="swatch-circle swatch-marble"></span> Marble
+            </button>
+            <button class="material-swatch" data-material="wood">
+              <span class="swatch-circle swatch-wood"></span> Cedar Oak
+            </button>
+            <button class="material-swatch" data-material="concrete">
+              <span class="swatch-circle swatch-concrete"></span> Concrete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FEATURED 3D PROPERTIES SECTION
+       ========================================================================== */
+  <section class="properties-section container" id="properties-section">
+    <div class="section-header-flex">
+      <div>
+        <span class="section-tag"><i class="fa-solid fa-gem"></i> Curated Portfolio</span>
+        <h2 class="section-title">Featured 3D Masterpieces</h2>
+        <p class="section-subtitle" style="margin-bottom: 0;">
+          Explore exclusive estates ready for immediate virtual walkthrough and private acquisition.
+        </p>
+      </div>
+
+      <div class="category-filter-nav">
+        <button class="cat-btn active" data-category="all">All Properties</button>
+        <button class="cat-btn" data-category="villas">Villas</button>
+        <button class="cat-btn" data-category="penthouses">Penthouses</button>
+        <button class="cat-btn" data-category="coastal">Waterfront</button>
+      </div>
+    </div>
+
+    <!-- Properties Grid -->
+    <div class="properties-grid" id="properties-grid">
+      <!-- Rendered dynamically by app.js -->
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       INTERACTIVE 3D SPACE CUSTOMIZER & FINISHES
+       ========================================================================== -->
+  <section class="space-customizer-section" id="space-customizer">
+    <div class="container">
+      <div class="customizer-grid">
+        <div class="customizer-text">
+          <span class="section-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> 3D Customizer Studio</span>
+          <h2>Tailor Architectural Finishes In Real Time</h2>
+          <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7;">
+            Personalize your living spaces before closing. Switch acoustic wall finishes, designer Italian upholstery, and custom marble configurations with instantaneous 3D WebGL rendering.
+          </p>
+
+          <div class="customizer-options-card">
+            <!-- Wall Finish Picker -->
+            <div class="option-group">
+              <div class="option-title">
+                <i class="fa-solid fa-brush"></i> Accent Wall Coating
+              </div>
+              <div class="custom-buttons-row">
+                <button class="custom-btn active" data-custom-wall="navy">Midnight Navy</button>
+                <button class="custom-btn" data-custom-wall="charcoal">Deep Slate</button>
+                <button class="custom-btn" data-custom-wall="cream">Off-White Stucco</button>
+              </div>
+            </div>
+
+            <!-- Furniture Upholstery Picker -->
+            <div class="option-group">
+              <div class="option-title">
+                <i class="fa-solid fa-couch"></i> Salon Velvet Upholstery
+              </div>
+              <div class="custom-buttons-row">
+                <button class="custom-btn active" data-custom-sofa="cyan">Sapphire Velvet</button>
+                <button class="custom-btn" data-custom-sofa="emerald">Emerald Forest</button>
+                <button class="custom-btn" data-custom-sofa="gold">Ochre Gold</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Mini Interactive Preview Box -->
+        <div class="customizer-preview-box">
+          <div class="customizer-overlay-info">
+            <i class="fa-solid fa-cube"></i> Live Interior 3D Viewport
+          </div>
+          <canvas id="customizer-3d-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       NEIGHBORHOOD RADAR & AMENITIES
+       ========================================================================== -->
+  <section class="radar-section container" id="radar-section">
+    <div class="text-center">
+      <span class="section-tag"><i class="fa-solid fa-satellite-dish"></i> Location Intelligence</span>
+      <h2 class="section-title">Prime Lifestyle & Amenities Radar</h2>
+      <p class="section-subtitle" style="margin: 0 auto;">
+        Every estate is mapped with hyper-local infrastructure, luxury concierge services, and private transit access.
+      </p>
+    </div>
+
+    <div class="radar-grid">
+      <div class="radar-card">
+        <div class="radar-icon-box">
+          <i class="fa-solid fa-plane-departure"></i>
+        </div>
+        <h3>Private Jet Terminals</h3>
+        <p>Direct 12-minute executive transfer to Van Nuys & Teterboro private aviation FBOs.</p>
+        <div class="radar-score-bar">
+          <div class="radar-score-fill" style="width: 96%;"></div>
+        </div>
+      </div>
+
+      <div class="radar-card">
+        <div class="radar-icon-box">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <h3>Michelin-Starred Dining</h3>
+        <p>14 Michelin three-star culinary dining venues within a 10-minute chauffeured radius.</p>
+        <div class="radar-score-bar">
+          <div class="radar-score-fill" style="width: 98%;"></div>
+        </div>
+      </div>
+
+      <div class="radar-card">
+        <div class="radar-icon-box">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <h3>Elite Private Academies</h3>
+        <p>Top-ranked international Baccalaureate preparatory schools and private campuses.</p>
+        <div class="radar-score-bar">
+          <div class="radar-score-fill" style="width: 94%;"></div>
+        </div>
+      </div>
+
+      <div class="radar-card">
+        <div class="radar-icon-box">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3>Private Gated Security</h3>
+        <p>24/7 biometric perimeter patrols, license-plate recognition, and dedicated armed response.</p>
+        <div class="radar-score-bar">
+          <div class="radar-score-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       TESTIMONIALS SECTION
+       ========================================================================== -->
+  <section class="testimonials-section" id="testimonials">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-tag"><i class="fa-solid fa-star"></i> VIP Client Reviews</span>
+        <h2 class="section-title">Trusted By Global Investors</h2>
+        <p class="section-subtitle" style="margin: 0 auto 50px;">
+          Hear how our 3D architectural platform transformed the acquisition journey for discerning buyers worldwide.
+        </p>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="test-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="test-quote">
+            "Acquiring an $11M penthouse from across the Atlantic felt effortless. The 3D tour allowed us to inspect every sun angle and room dimension with unmatched accuracy."
+          </p>
+          <div class="test-author-box">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Sarah Lin" class="test-author-avatar">
+            <div>
+              <div class="test-author-name">Sarah Lin, Ph.D.</div>
+              <div class="test-author-role">Tech Entrepreneur & Investor</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="test-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="test-quote">
+            "The real-time material customizer allowed our design team to approve marble slabs and deck textures before ground was even broken. A revolutionary tool."
+          </p>
+          <div class="test-author-box">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" alt="Jonathan Sterling" class="test-author-avatar">
+            <div>
+              <div class="test-author-name">Jonathan Sterling</div>
+              <div class="test-author-role">Principal Architect, Sterling Design</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="test-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="test-quote">
+            "The seamless integration of virtual walk-throughs and instant concierge booking makes AURA 3D the absolute gold standard in luxury real estate."
+          </p>
+          <div class="test-author-box">
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80" alt="David K. Vance" class="test-author-avatar">
+            <div>
+              <div class="test-author-name">David K. Vance</div>
+              <div class="test-author-role">Managing Director, Horizon Capital</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       CTA BANNER
+       ========================================================================== -->
+  <section class="cta-banner-section container">
+    <div class="cta-banner-box">
+      <h2>Ready to Experience Your Next Estate in 3D?</h2>
+      <p>
+        Create your VIP account now to unlock exclusive unlisted 3D architectural models, save custom floorplans, and book private agent consultations.
+      </p>
+      <div class="cta-btn-group">
+        <a href="register.html" class="btn btn-primary btn-lg">
+          <i class="fa-solid fa-user-plus"></i> Create Free VIP Account
+        </a>
+        <a href="login.html" class="btn btn-secondary btn-lg">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <div class="logo-icon"><i class="fa-solid fa-cube"></i></div>
+            <span>AURA<span class="gold-gradient-text">3D</span></span>
+          </a>
+          <p>
+            The world's leading real estate platform for interactive WebGL 3D architectural tours, digital twins, and luxury estate acquisitions.
+          </p>
+          <div class="social-links">
+            <a href="#" class="social-btn" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#" class="social-btn" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="social-btn" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#" class="social-btn" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul class="footer-links-list">
+            <li><a href="#tour-studio">3D Virtual Studio</a></li>
+            <li><a href="#properties-section">Featured Listings</a></li>
+            <li><a href="#space-customizer">Space Customizer</a></li>
+            <li><a href="#radar-section">Neighborhood Radar</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Portal Access</h4>
+          <ul class="footer-links-list">
+            <li><a href="login.html">Client Sign In</a></li>
+            <li><a href="register.html">Register New Account</a></li>
+            <li><a href="login.html">Agent Portal</a></li>
+            <li><a href="#tour-studio">VR Walkthroughs</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>VIP Newsletter</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 12px;">Receive early access to off-market 3D estates and architectural debuts.</p>
+          <form id="newsletter-form" class="newsletter-form">
+            <input type="email" class="newsletter-input" placeholder="Enter your email..." required>
+            <button type="submit" class="btn btn-primary btn-sm">Join</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 AURA 3D Real Estate Technologies Inc. All rights reserved.</div>
+        <div style="display: flex; gap: 20px;">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Security & Compliance</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       VIP TOUR BOOKING MODAL
+       ========================================================================== -->
+  <div class="modal-backdrop" id="booking-modal">
+    <div class="modal-dialog">
+      <button class="modal-close-btn" aria-label="Close Modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      
+      <div style="margin-bottom: 20px;">
+        <span class="section-tag" style="margin-bottom: 8px;"><i class="fa-solid fa-calendar-check"></i> VIP Concierge</span>
+        <h3 id="booking-prop-name" style="font-size: 1.5rem; margin-bottom: 4px; color: var(--text-primary);">The Solstice Glass Villa</h3>
+        <p id="booking-prop-price" style="color: var(--accent-gold); font-weight: 800; font-size: 1.2rem;">$8,450,000</p>
+      </div>
+
+      <form id="booking-form" style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="form-group">
+          <label class="form-label" for="book-name">Your Full Name</label>
+          <input type="text" id="book-name" class="form-input" style="padding-left: 14px;" placeholder="e.g. Alex Rivera" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="book-email">Email Address</label>
+          <input type="email" id="book-email" class="form-input" style="padding-left: 14px;" placeholder="alex.rivera@example.com" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label" for="book-date">Preferred Date</label>
+            <input type="date" id="book-date" class="form-input" style="padding-left: 14px;" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="book-tour-type">Tour Format</label>
+            <select id="book-tour-type" class="form-select" style="padding-left: 14px;">
+              <option value="virtual-3d">Guided 3D Virtual Tour</option>
+              <option value="in-person">Private In-Person Viewing</option>
+              <option value="vr-headset">Live VR Walkthrough</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="book-notes">Special Requests / Preferences</label>
+          <textarea id="book-notes" class="form-input" style="padding-left: 14px; min-height: 80px; resize: vertical;" placeholder="Include any specific architectural elements you wish to inspect..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+          <i class="fa-solid fa-lock"></i> Request VIP Tour Confirmation
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/db.js"></script>
+  <script src="js/ar-engine.js"></script>
+  <script src="js/three-scene.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

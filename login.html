@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In | AR-REALTOUR 3D &amp; AR Platform</title>
+  <meta name="description"
+    content="Sign in to your AR-REALTOUR account to explore luxury estates in interactive 3D, inspect floorplans in AR, and manage portfolio listings.">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Auth Stylesheet -->
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+
+<body class="auth-body">
+
+  <div class="auth-bg-ambient"></div>
+
+  <main class="auth-container">
+    <!-- Left Hero Feature Panel -->
+    <div class="auth-side-panel">
+      <div>
+        <a href="index.html" class="auth-brand">
+          <div class="auth-brand-icon">
+            <i class="fa-solid fa-cube"></i>
+          </div>
+          <span>AR-REAL<span style="color: #38bdf8;">TOUR</span></span>
+        </a>
+
+        <div class="auth-hero-feature">
+          <h2>Interactive 3D &amp; AR Real Estate Platform</h2>
+          <p>
+            Experience properties in true-to-life 3D and WebXR Augmented Reality. Seamlessly manage listings, 3D models, and client tour inquiries.
+          </p>
+
+          <ul class="auth-perks-list">
+            <li class="auth-perk-item">
+              <div class="auth-perk-icon"><i class="fa-solid fa-vr-cardboard"></i></div>
+              <span>WebGL 3D virtual walkthroughs &amp; day/night lighting</span>
+            </li>
+            <li class="auth-perk-item">
+              <div class="auth-perk-icon"><i class="fa-solid fa-expand"></i></div>
+              <span>WebXR Augmented Reality with tabletop &amp; 1:1 scale</span>
+            </li>
+            <li class="auth-perk-item">
+              <div class="auth-perk-icon"><i class="fa-solid fa-shield-halved"></i></div>
+              <span>Full Admin backend management portal</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="auth-side-footer">
+        <span>&copy; 2026 AR-REALTOUR Technologies</span>
+        <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to 3D Platform</a>
+      </div>
+    </div>
+
+    <!-- Right Form Card -->
+    <div class="auth-form-panel">
+      <div class="auth-form-header">
+        <h1>Sign In to Portal</h1>
+        <p>Sign in to your account or <a href="register.html">create a new account</a>.</p>
+      </div>
+
+      <!-- Alert Notification Banner -->
+      <div class="auth-alert" id="auth-alert"></div>
+
+      <!-- Standard Login Form (Username & Password) -->
+      <form class="auth-form" id="login-form" novalidate>
+        <div class="auth-group">
+          <label class="auth-label" for="login-email">Username or Email</label>
+          <div class="auth-input-wrap">
+            <i class="fa-solid fa-user input-icon-left"></i>
+            <input type="text" id="login-email" class="auth-input" placeholder="name@example.com"
+              autocomplete="username" required>
+          </div>
+          <span class="auth-error-msg" id="login-email-error"></span>
+        </div>
+
+        <div class="auth-group">
+          <div class="auth-label">
+            <label for="login-password">Password</label>
+            <a href="javascript:void(0)" class="auth-link" style="font-size: 0.8rem;"
+              onclick="alert('Password recovery is not configured in this local demo. Use one of the demo account buttons above.')">Forgot password?</a>
+          </div>
+          <div class="auth-input-wrap">
+            <i class="fa-solid fa-lock input-icon-left"></i>
+            <input type="password" id="login-password" class="auth-input" placeholder="••••••••"
+              autocomplete="current-password" required>
+            <button type="button" class="btn-eye-toggle" aria-label="Toggle password visibility">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+          <span class="auth-error-msg" id="login-password-error"></span>
+        </div>
+
+        <div class="auth-remember-row">
+          <label class="auth-checkbox-label">
+            <input type="checkbox" id="login-remember" class="auth-checkbox" checked>
+            <span>Remember this device</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-auth-submit" style="cursor: pointer;">
+          <span>Sign In &amp; Launch Studio</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+
+</html>

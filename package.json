@@ -1,0 +1,21 @@
+{
+  "name": "arrealtour-platform",
+  "version": "1.0.0",
+  "description": "AR-REALTOUR 3D & WebXR Real Estate Platform with Local MongoDB Community Server",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "seed": "node backend/seed.js",
+    "install:backend": "cd backend && npm install"
+  },
+  "keywords": [
+    "realestate",
+    "3d",
+    "webxr",
+    "mongodb",
+    "threejs"
+  ],
+  "author": "AR-REALTOUR Team",
+  "license": "ISC"
+}
