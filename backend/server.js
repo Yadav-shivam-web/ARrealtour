@@ -11,7 +11,7 @@ const inquiryRoutes = require('./routes/inquiries');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/arrealtour';
+const MONGODB_URI = process.env.MONGODB_URI || (process.env.NODE_ENV === 'production' ? '' : 'mongodb://127.0.0.1:27017/arrealtour');
 const allowedOrigins = new Set([
   `http://localhost:${PORT}`,
   `http://127.0.0.1:${PORT}`,
@@ -76,6 +76,13 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
   try {
+    if (!MONGODB_URI) {
+      throw new Error('MONGODB_URI must be configured in production.');
+    }
+    if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET must be configured in production.');
+    }
+
     await mongoose.connect(MONGODB_URI);
     console.log(`MongoDB connected: ${mongoose.connection.name}`);
 

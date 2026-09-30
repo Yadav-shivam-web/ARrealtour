@@ -6,9 +6,9 @@
  */
 
 const DB = {
-  // Base API URL - Works both when served directly via Express (http://localhost:5000) or via Live Server / file
+  // Use the current host in production; keep the local API fallback for file/Live Server use.
   API_BASE: (function () {
-    if (window.location.origin && window.location.origin.includes(':5000')) {
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
       return '/api';
     }
     return 'http://localhost:5000/api';
